@@ -30,19 +30,32 @@
             display: none;
             padding: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        header {
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            margin-bottom: 20px;
         }
-        table th, table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
+        #header-logo {
+            width: 50px;
+            height: auto;
+            margin-right: 20px;
+        }
+        #class-selector, #roll-input {
+            margin: 10px 0;
+            padding: 12px; /* Slightly increased padding */
+            font-size: 16px; /* Slightly larger font size */
+            height: 45px; /* Slightly increased height */
+            width: 100%; /* Make the elements take full available width */
+            max-width: 500px; /* Ensure they don't stretch too much */
         }
         button {
-            padding: 10px 20px;
-            margin: 5px;
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            margin: 10px 0;
+            padding: 15px; /* Make buttons larger */
+            font-size: 18px; /* Button text size */
             background-color: #3498db;
             color: white;
             border: none;
@@ -51,19 +64,33 @@
         button:hover {
             background-color: #2980b9;
         }
+        div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div id="splash-screen">
-    <img id="splash-logo" src="https://i.imgur.com/MjL4SlT.png" alt="Logo" style="width: 150px; height: auto; margin-bottom: 10px;">
+        <img id="splash-logo" src="https://i.imgur.com/MjL4SlT.png" alt="Logo" style="width: 150px; height: auto; margin-bottom: 10px;">
         <p id="message"></p>
     </div>
     <div id="main-screen">
-        <header style="display: flex; align-items: center; padding-left: 10px;">
-    <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo" 
-         style="width: 50px; height: auto; margin-right: 20px;">
-    <h1 style="margin: 0;">Absentees Sorter</h1>
-</header>
+        <header>
+            <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo">
+            <h1 style="margin: 0;">Absentees Sorter</h1>
+        </header>
 
         <div>
             <select id="class-selector">
@@ -247,4 +274,4 @@
         });
     </script>
 </body>
-</html>
+</html>  <!-KARTHIK R-->
