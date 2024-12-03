@@ -24,7 +24,7 @@
         #app-logo {
             width: 100px; /* Adjust logo size */
             height: 100px; /* Adjust logo size */
-            margin-bottom: 20px; /* Space between logo and app name */
+            margin-bottom: 22px; /* Space between logo and app name */
         }
         #main-screen {
             display: none;
@@ -55,14 +55,16 @@
 </head>
 <body>
     <div id="splash-screen">
-        <img id="app-logo" src=""D:\Downloads\Logo.jpg" alt="App Logo">
-        <h1>AbsentEase</h1>
+    <img id="splash-logo" src="https://i.imgur.com/MjL4SlT.png" alt="Logo" style="width: 150px; height: auto; margin-bottom: 10px;">
         <p id="message"></p>
     </div>
     <div id="main-screen">
-        <header>
-            <h1>Student Management</h1>
-        </header>
+        <header style="display: flex; align-items: center; padding-left: 10px;">
+    <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo" 
+         style="width: 50px; height: auto; margin-right: 20px;">
+    <h1 style="margin: 0;">Absentees Sorter</h1>
+</header>
+
         <div>
             <select id="class-selector">
                 <option value="Class A1">Class A1</option>
@@ -100,7 +102,7 @@
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
 
-            const message = "Welcome to our app!\n Made by 2023-2025\n CS Batch students.";
+            const message = "Welcome To Our App!\n Made by 2023-2025\n CS Batch students.";
 
             let studentData = {
                'Class A1': [
