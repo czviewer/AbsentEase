@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AbsentEase</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
+        /* Your existing CSS remains the same */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -13,7 +17,7 @@
         }
         #splash-screen {
             display: flex;
-            flex-direction: column; /* Align text vertically */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -21,47 +25,11 @@
             color: white;
             text-align: center;
         }
-        #app-logo {
-            width: 100px; /* Adjust logo size */
-            height: 100px; /* Adjust logo size */
-            margin-bottom: 20px; /* Space between logo and app name */
-        }
-        #main-screen {
-            display: none;
-            padding: 21px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table th, table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 15px 10px; /* Increased the margin between buttons */
-            background-color: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        input[type="text"], select {
-            padding: 10px;
-            margin: 10px 0; /* Increased margin between input and button */
-            width: 100%;
-            max-width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+        /* ... (keep all other CSS styles the same) ... */
     </style>
 </head>
 <body>
+    <!-- Your existing HTML structure remains the same -->
     <div id="splash-screen">
         <img id="splash-logo" src="https://i.imgur.com/MjL4SlT.png" alt="Logo" style="width: 150px; height: auto; margin-bottom: 10px;">
         <p id="message"></p>
@@ -74,14 +42,12 @@
         </header>
 
         <div>
+            <div class="error-message" id="error-message"></div>
             <select id="class-selector">
-                <option value="Class A1">Class A1</option>
-                <option value="Class A2">Class A2</option>
-                <option value="Class B1">Class B1</option>
-                <option value="Class C1">Class C1</option>
-                <option value="Class C2">Class C2</option>
-                <option value="Class D1">Class D1</option>
-                <option value="Class D2">Class D2</option>
+                <option value="A2">Class A2</option>
+                <option value="B2">Class B2</option>
+                <option value="C2">Class C2</option>
+                <option value="D2">Class D2</option>
             </select>
             <input type="text" id="roll-input" placeholder="Enter roll numbers (space or comma separated)" />
             <button id="search-btn">Search</button>
@@ -98,113 +64,59 @@
             <tbody id="results-table-body"></tbody>
         </table>
     </div>
+
     <script>
+        // REPLACE WITH YOUR FIREBASE CONFIG (From Firebase Console > Project Settings)
+        const firebaseConfig = {
+  apiKey: "AIzaSyBBSXDKjH2kk7c8oaMPEZlDPrbi9L4is4",
+  authDomain: "cvkm-52da0.firebaseapp.com",
+  databaseURL: "https://cvkm-52da0-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "cvkm-52da0",
+  storageBucket: "cvkm-52da0.appspot.com",
+  messagingSenderId: "733824760937",
+  appId: "1:733824760937:web:b4522b9c219a0d5ab717e5"
+};
+
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         document.addEventListener("DOMContentLoaded", function () {
+            // Your existing variables
             const splashScreen = document.getElementById("splash-screen");
             const mainScreen = document.getElementById("main-screen");
             const messageEl = document.getElementById("message");
+            const errorMessage = document.getElementById("error-message");
             const rollInput = document.getElementById("roll-input");
             const searchBtn = document.getElementById("search-btn");
             const viewAllBtn = document.getElementById("view-all-btn");
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
 
-            const message = "Welcome To Our App!\n Made by 2023-2025\n CS Batch students.";
-        
+            const welcomeMessage = "Welcome To Our App!\n Made by 2023-2025\n CS Batch students.";
 
+            async function fetchClassData(className) {
+                try {
+                    const snapshot = await database.ref(`classes/${className}`).once('value');
+                    const students = snapshot.val();
+                    
+                    // Remove the first null entry and return
+                    return students.filter((student, index) => index !== 0);
+                    
+                } catch (error) {
+                    showError("Failed to load class data. Please try again.");
+                    return [];
+                }
+            }
 
-            let studentData = {
-               'Class A1': [
-                    'ABHISHEK AR', 'DANY S PETER', 'DEVANANDAN J', 'HARINANDAN BS',
-                    'JOSHUA ROY', 'ROHITH BINIL', 'AALIYA KABEER S', 'DEVIKA R GIREESH',
-                    'DEVIKA S', 'TESNA JOHNSON', 'JINSHA S', 'KRISHNA S', 'NEHA S', 'NIRANJANA BIJU',
-                    'PAVITHRA P', 'SONA SUSEELAN', 'STECY SABU', 'ADITHYAN D PILLAI', 'SEBIN SABU',
-                    'ALONA MARY', 'AMRITHA SASIDHARAN', 'ANJANA JOHNSON', 'CHRISTINA MARIYAM BINU',
-                    'HANNA JOHN DANIEL', 'HANNA SAJU', 'KEZIAH ANTONY', 'LIYA VARGHESE', 'MEENAKSHI S',
-                    'MRIDHULA B', 'SANIYA SABU', 'SONA S', 'VANDHANA S R', 'ABHIJITH S', 'ADORN A',
-                    'AKSHAY DILEEP', 'ALAN S', 'ALPHIN JACOB', 'AMAL JOSE', 'AMAL S JOSE', 'ASHLIN LAWRANCE',
-                    'BHAGATH PRATHYU', 'CHRISTY VS', 'ELSON A', 'KASINATH S', 'KP NIKHIL', 'NAVEEN M NAIR',
-                    'PRABHULAL B', 'SURYANARAYANAN R', 'AHALYA S SANTHOSH', 'AMALU S', 'AMRUTHA A S',
-                    'ARSHA S ANIL', 'ARUNIMA PRADEEP', 'AVANTHIKA R', 'DEVANANDA JAYAN', 'DIYA YOHANNAN',
-                    'NEGHA ANNA SURESH', 'NISHA S SANTHOSH', 'RITHU KRISHNA D', 'SIVALEKSHMI R'
-                ],
-                'Class A2': [
-                    'AKASH SANTHOSH', 'ALAN ANI', 'ANTO JOHN', 'ASWIN U', 'BLESSON BAIJU',
-                    'NANDHAKUMAR', 'PRAFUL B PRADEEP', 'SHARON SABU', 'ADITHYA R', 'AKSA MARIYA SURESH',
-                    'ANAKHA TR', 'ANUGRAHA S BIJU', 'ASHLY SIBILAL', 'ASHNA SIBILAL', 'EVA BIJU', 'GOURI NANDHANA',
-                    'JOYCE JOSE', 'KESIYA BAIJU', 'MS MEERAKRISHNA', 'NANDANA J', 'NAMRUTHA SHYJU', 'ABITHA SYRIL',
-                    'ALAN SAM', 'JOSHUA JACOB NINAN', 'ANN MARIYA BIJU', 'ANUSREE VV', 'CHITHIRA B', 'JEEVA JOSE',
-                    'POOJA AS', 'SURYA S', 'ABHISHEK S NAIR', 'ADITHYA RAJ', 'ALFIN SUNIL', 'GEORGEKUTTY S',
-                    'HARINANDAN A', 'JYOTHISH M', 'KASI KRISHΝΑ', 'VISHNU S', 'ADITHYA PR', 'AHALYA G',
-                    'AISWARYA S PILLAI', 'ALEENA JOSEPH', 'ANJANA ANUJU', 'ANKITHAJITH', 'ARADHANA B', 'ARDRA P',
-                    'ASWATHY MJ', 'BINCY BIJU', 'DAKSHINA VINOD', 'DAYA BS', 'DIYA DP', 'GOPIKA S', 'HARANI M',
-                    'JOTHISHMA JOHNSON', 'JWALA B', 'KRISHNENDU GS', 'NEHA JACOB', 'PARVATHY R', 'SAYANA S', 'SEYA BINU'
-                ],
-                'Class B1': [
-                    'Adarsh L', 'Amal Y', 'Govind Shibu', 'Joel B Varghese', 'Neel Sanjay', 'Souri Anoop Kumar', 
-                    'Vijin VS', 'Aksa Mariyam Saji', 'Amala S Thomas', 'Amruthamol B', 'Anamika AM', 'Anjitha Prasad', 
-                    'Ann Maria Binu', 'Asin Das', 'Essa Biju', 'Lekshmi M', 'Lisna P Saji', 'Parvathy M', 'Riya Das', 
-                    'Sandra B', 'Sreereshmi A', 'Swathi Krishna A', 'Abhinav A', 'Abhinav AS', 'Abhishek A', 
-                    'Albin Joseph', 'Joseph Richard', 'Akshitha AS', 'Ashly Abraham', 'Aswani Kavidas', 'Devika Pradeep', 
-                    'Sangeetha V', 'Sona Santhosh', 'Aaron S', 'Abhiraj JR', 'Akash A', 'Arjun AS', 'Aromal S', 
-                    'Aswin Renjish', 'Ebel Sunil', 'Jeswin Jiji', 'Nithin Ullas', 'Sidharth S', 'Abhirami LM', 
-                    'Abhirami S Uday', 'Ananya Ravu', 'Aneena S Sabu', 'Angel Colin', 'Anusha Biju', 'Ardra Anil', 
-                    'Ashna Rose', 'Aswathy D', 'Athulya AP', 'Durga Lekshmi', 'Mydhily M', 'Nayana K Babu', 
-                    'Sanjana S', 'Saranya S', 'Sneha Koshy', 'Sreelekshmi B'
-                ],
-                'Class B2': [
-                    'Abhishek B', 'Abhishek JB', 'Adhithyan OS', 'Albin John Binu', 'Christin Vinoj',
-                    'Darsan DP', 'Deric Alvin Aloshius', 'Felix G Jose', 'Roshan N Sakharia', 'Sandeep S',
-                    'Adheena Jose', 'Adheena MA', 'Adithya MK', 'Ancy Binoy', 'Ashitha Mary A', 'Asna Renjan',
-                    'Aswathy Brahma', 'Jasna Jayan', 'Keerthy Raj', 'Sneha S', 'Abel Boby John', 'Bittu M Biju',
-                    'Febin Raju', 'Govind G', 'Aleena Jose', 'Aroshma Suresh Babu', 'Devika Bose', 'Meenu Krishna S',
-                    'Parvathy JS', 'Abhishek SR', 'Abin Robin', 'Akash S', 'Christin K Somar', 'Ebin John E',
-                    'Gokul Krishnan J', 'Jabin J', 'Jude Jacob', 'Nandakrishnan B', 'Sangav R Krishna',
-                    'Sivanandan J', 'Aksa Koshy', 'Anamika S', 'Angel Mary Suresh', 'Anjitha S Nath', 'Aswathy AS',
-                    'Feba Biju', 'Febi Robert', 'Gourinath VJ', 'Kalyani R Nair', 'Lija Jerome Augustine', 'MB Ashly', 'Prarthana S Vinod',
-                    'Preethi L', 'Reshmi R Pillai', 'Sandhya D', 'Sneha Sebastian', 'Sona Suku',
-                    'Sreema MS', 'Sreenandha BS', 'Stephy Mary Georgekutty'
-                ],
-                'Class C1': [
-                    'Abhilash S', 'Adhil N', 'Akshay P', 'Akshay Raj', 'Alan A', 'Alan Lal P',
-                    'Jobin BL', 'Kevin S Santhosh', 'Muhammed Bilal S', 'Neeraj BR', 'Neeraj VS',
-                    'Nirmal Dev VA', 'Rohith Rajan', 'Saideep S', 'Sreedarsh S', 'Vaishnav V', 'Varun VR',
-                    'Vimal Rajan', 'Vishnu B', 'Abinaya BA', 'Adithya Gopakumar', 'Adithya R', 'Anjana Jeron',
-                    'Aparna Krishnan AS', 'Daya U', 'Diana D', 'Gouri BS', 'Libimol MS', 'Midhuna MR',
-                    'Nandhana K', 'Naseema M', 'Reeba D', 'Sanjana Sajeev', 'Sanooja J', 'Sivaja SJ',
-                    'Subi B', 'Aneeji J', 'Ashik S', 'Bhuvana Prakash PS', 'Devika Manikumar', 'Karthika A',
-                    'Adwaith S', 'Jathavedan BS', 'Pavi SS', 'Samvritha S'
-                ],
-                'Class C2': [
-                    'ANAND F', 'Ashin Jeby', 'Jayakumar', 'Manosh MS', 'Mukhil Mukesh', 'Rithu Varnan',
-                    'Vichu', 'Yadhu Krishnan', 'Abhirami', 'Amritha R Pillai', 'Anjali S', 'Anjana Ajay',
-                    'Anusree R Nath', 'Asin', 'Nikhila', 'Sandra', 'Saranya', 'Sona Sanu', 'Sonu Sunil',
-                    'Sruthy Pillai', 'Thamburu', 'Alan Titus', 'Nayan Raj', 'Amrutha', 'Abhishek', 'Abin B',
-                    'Adithyan S', 'Alan Edison', 'Athul Krishna', 'Bibin Balachandran', 'Midhun Raj',
-                    'Pranav Bhagavath', 'Sree Hari', 'Abhirami', 'Adithya', 'Arsha Johnson', 'Greeshma Gireesh',
-                    'Krishna', 'Sunitha'
-                ],
-                'Class D1': [
-                    'ABHIJITH B', 'AJAY CHANDRAN', 'ALAN K SABU', 'AROMAL M', 'DEVADARSHAN A',
-                    'MUHAMMED SAHIL S', 'PRANAV S PRAVEEN', 'ROYAL SAJESH', 'RYAN JACOB PRAMOD',
-                    'SANISH DEV S', 'SHARON M DANIEL', 'SIJITH JOHNSON', 'VISHNU JR PRASAD', 'AANJARAJ S',
-                    'ADMIYA KOSHI', 'POOJA KRISHNA', 'ABIN K SIMON', 'ALAN K DANIEL', 'BIBITH BIJU', 'BIVIN BABU',
-                    'DHRUVAN VIJAY', 'HEAVEN BOSE', 'JERIN THANKACHAN', 'JOEAL JOSE JACOB', 'MADHAV S', 'M S MAANAS',
-                    'NEWEL S OOMMEN', 'NOEL THOMAS', 'PARTHAN', 'SAM D BABU', 'SREEHARI S', 'VYSHAKH S',
-                    'ABHIRAMI R', 'ALEENA ANN SALU', 'ABEL ROY', 'ASHIK ANIL', 'EMMANUEL B S', 'GOKUL AR',
-                    'JERIN JACOB', 'KRISHNA SUDIP PILLAI', 'LIJO JOY', 'SAMSON SURESH', 'VIJIN KRISHNA V',
-                    'VIKHNESH S', 'BIBITHA BINU', 'GOURI KRISHNA S'
-                ],
-                'Class D2': [
-                    'Adwaith Prasanth', 'Albin Vijayan', 'Amal Sabu', 'Aromal H', 'Devanandan', 'Karthik R',
-                    'Nikhil P', 'Rojin Reji', 'Sanjayth', 'Saurabh Balachandran', 'Sreehari G S', 'Sreerag S R',
-                    'Vinayak V', 'Keerthana S', 'Nasiha', 'Pooja A S', 'Sona Mary', 'Sreelekshmi', 'Aaron J Shibu',
-                    'Abhinav R', 'Adwaith P', 'Gowry Shankar', 'Hardav M Kurup', 'Apoorva', 'Parvathy Santhosh',
-                    'Vibina', 'Abhijith Biju', 'Abhinav P', 'Ajas', 'Ajo E', 'Akhil A S', 'B Alan', 'Jasoory P J',
-                    'Sreehari M S', 'Sreenandh', 'Vijwal', 'Vinayak R', 'Haripriya S', 'Thanishqa'
-                ]
-            };
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = "block";
+                setTimeout(() => errorMessage.style.display = "none", 5000);
+            }
 
+            // Your existing typeMessage and showMainScreen functions
             function typeMessage(msg, index = 0) {
                 if (index < msg.length) {
                     messageEl.textContent += msg[index];
@@ -221,39 +133,84 @@
 
             function displayStudents(students) {
                 resultsTableBody.innerHTML = "";
-                students.forEach((student, i) => {
+                students.forEach((student, index) => {
                     const row = document.createElement("tr");
-                    row.innerHTML = `<td>${i + 1}</td><td>${student}</td>`;
+                    row.innerHTML = `<td>${index + 1}</td><td>${student}</td>`;
                     resultsTableBody.appendChild(row);
                 });
             }
 
-            searchBtn.addEventListener("click", () => {
-                const rollNumbers = rollInput.value.split(/[\s,]+/).map(num => parseInt(num.trim()) - 1);
+            // Modified Search Button Click Handler
+            searchBtn.addEventListener("click", async () => {
+                const input = rollInput.value.trim();
                 const selectedClass = document.getElementById("class-selector").value;
-                const students = rollNumbers.map(num => studentData[selectedClass][num]).filter(Boolean);
-                displayStudents(students);
-                shareBtn.style.display = students.length ? "inline-block" : "none";
-            });
+                
+                if (!input) {
+                    showError("Please enter at least one roll number");
+                    return;
+                }
 
-            viewAllBtn.addEventListener("click", () => {
-                const selectedClass = document.getElementById("class-selector").value;
-                displayStudents(studentData[selectedClass]);
-                shareBtn.style.display = "none";
-            });
+                const students = await fetchClassData(selectedClass);
+                
+                // Process roll numbers (1-based index from your database)
+                const rollNumbers = input.split(/[\s,]+/).map(num => {
+                    const parsed = parseInt(num.trim());
+                    return isNaN(parsed) ? null : parsed;
+                });
 
-            shareBtn.addEventListener("click", () => {
-                const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
-                const shareContent = rows.map(row => row.cells[1].textContent).join("\n");
-                if (navigator.share) {
-                    navigator.share({ text: `Today's Absentees:\n${shareContent}` });
-                } else {
-                    alert("Sharing not supported on this device.");
+                const errors = [];
+                const validStudents = [];
+                
+                rollNumbers.forEach((roll) => {
+                    if (roll === null) {
+                        errors.push(`Invalid number: ${roll}`);
+                    } else if (roll < 1 || roll > students.length) {
+                        errors.push(`Roll ${roll}: Out of range (1-${students.length})`);
+                    } else {
+                        validStudents.push(students[roll - 1]);
+                    }
+                });
+
+                if (errors.length > 0) {
+                    showError("Invalid input:\n" + errors.join("\n"));
+                }
+
+                if (validStudents.length > 0) {
+                    displayStudents(validStudents);
+                    shareBtn.style.display = "inline-block";
                 }
             });
 
-            typeMessage(message);
+            // Modified View All Button
+            viewAllBtn.addEventListener("click", async () => {
+                const selectedClass = document.getElementById("class-selector").value;
+                const students = await fetchClassData(selectedClass);
+                
+                if (students.length > 0) {
+                    displayStudents(students);
+                    shareBtn.style.display = "none";
+                }
+            });
+
+            // Keep your existing shareBtn click handler
+            shareBtn.addEventListener("click", () => {
+                const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
+                const shareContent = rows.map(row => row.cells[1].textContent).join("\n");
+                
+                if (navigator.share) {
+                    navigator.share({ 
+                        title: "Absentees List",
+                        text: `Today's Absentees:\n${shareContent}`
+                    });
+                } else {
+                    alert("Sharing not supported - Copy to clipboard instead");
+                    navigator.clipboard.writeText(shareContent);
+                }
+            });
+
+            // Start the app
+            typeMessage(welcomeMessage);
         });
     </script>
 </body>
-</html>  <!-KARTHIK R-->
+</html>
