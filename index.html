@@ -3,70 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsentEase</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <title>AbsentEase | Student Attendance Manager</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Your existing CSS remains the same */
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #FFFFFF;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Splash Screen */
         #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #000000;
-            color: white;
-            text-align: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
         }
-        /* ... (keep all other CSS styles the same) ... */
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #splash-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        #message {
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 300;
+        }
+
+        /* Main Screen */
+        #main-screen {
+            display: none;
+            padding: 30px 0;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #header-logo {
+            width: 50px;
+            height: auto;
+            margin-right: 15px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button i {
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #3ab7d8;
+        }
+
+        /* Results Table */
+        .results-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Error Message */
+        .error-message {
+            color: var(--danger);
+            background-color: #fdd;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
-    <!-- Your existing HTML structure remains the same -->
+    <!-- Splash Screen -->
     <div id="splash-screen">
-        <img id="splash-logo" src="https://i.imgur.com/MjL4SlT.png" alt="Logo" style="width: 150px; height: auto; margin-bottom: 10px;">
+        <img id="splash-logo" src="https://i.postimg.cc/BbnQvL6M/Mj-L4-Sl-T-removebg-preview.png" alt="AbsentEase Logo">
         <p id="message"></p>
     </div>
-    <div id="main-screen">
-        <header style="display: flex; align-items: center; padding-left: 10px;">
-            <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo" 
-                 style="width: 50px; height: auto; margin-right: 20px;">
-            <h1 style="margin: 0;">Absentees Sorter</h1>
-        </header>
 
-        <div>
-            <div class="error-message" id="error-message"></div>
-            <select id="class-selector">
-                <option value="A2">Class A2</option>
-                <option value="B2">Class B2</option>
-                <option value="C2">Class C2</option>
-                <option value="D2">Class D2</option>
-            </select>
-            <input type="text" id="roll-input" placeholder="Enter roll numbers (space or comma separated)" />
-            <button id="search-btn">Search</button>
-            <button id="view-all-btn">View All Students</button>
-            <button id="share-btn" style="display: none;">Share</button>
+    <!-- Main Screen -->
+    <div id="main-screen">
+        <div class="container">
+            <header>
+                <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo">
+                <h1>AbsentEase <span style="font-size: 1rem; color: #6c757d;">Attendance Manager</span></h1>
+            </header>
+
+            <div class="control-panel">
+                <div class="error-message" id="error-message"></div>
+                
+                <div class="form-group">
+                    <label for="class-selector"><i class="fas fa-users"></i> Select Class</label>
+                    <select id="class-selector">
+                        <option value="A1">Class A1</option>
+                        <option value="A2">Class A2</option>
+                        <option value="B1">Class B1</option>
+                        <option value="B2">Class B2</option>
+                        <option value="C1">Class C1</option>
+                        <option value="C2">Class C2</option>
+                        <option value="D1">Class D1</option>
+                        <option value="D2">Class D2</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="roll-input"><i class="fas fa-id-card"></i> Enter Roll Numbers</label>
+                    <input type="text" id="roll-input" placeholder="Example: 1, 5, 7 or 1 5 7">
+                </div>
+
+                <div class="btn-group">
+                    <button id="search-btn" class="btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <button id="view-all-btn" class="btn-secondary">
+                        <i class="fas fa-list"></i> View All
+                    </button>
+                    <button id="share-btn" class="btn-success" style="display: none;">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Results will appear here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Roll Number</th>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody id="results-table-body"></tbody>
-        </table>
     </div>
 
+    <!-- Firebase & App Script -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script>
-        // REPLACE WITH YOUR FIREBASE CONFIG (From Firebase Console > Project Settings)
+        // Your Firebase config (replace with your actual config)
         const firebaseConfig = {
   apiKey: "AIzaSyBBSXDKjH2kk7c8oaMPEZlDPrbi9L4is4",
   authDomain: "cvkm-52da0.firebaseapp.com",
@@ -83,7 +345,6 @@
         const database = firebase.database();
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Your existing variables
             const splashScreen = document.getElementById("splash-screen");
             const mainScreen = document.getElementById("main-screen");
             const messageEl = document.getElementById("message");
@@ -94,53 +355,68 @@
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
 
-            const welcomeMessage = "Welcome To Our App!\n Made by 2023-2025\n CS Batch students.";
+            const welcomeMessage = "Welcome To Our App!\nMade by 2023-2025\nCS Batch students";
 
-            async function fetchClassData(className) {
-                try {
-                    const snapshot = await database.ref(`classes/${className}`).once('value');
-                    const students = snapshot.val();
-                    
-                    // Remove the first null entry and return
-                    return students.filter((student, index) => index !== 0);
-                    
-                } catch (error) {
-                    showError("Failed to load class data. Please try again.");
-                    return [];
-                }
-            }
-
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.style.display = "block";
-                setTimeout(() => errorMessage.style.display = "none", 5000);
-            }
-
-            // Your existing typeMessage and showMainScreen functions
+            // Typing animation for splash screen
             function typeMessage(msg, index = 0) {
                 if (index < msg.length) {
                     messageEl.textContent += msg[index];
                     setTimeout(() => typeMessage(msg, index + 1), 50);
                 } else {
-                    setTimeout(() => showMainScreen(), 1000);
+                    setTimeout(() => {
+                        splashScreen.classList.add("fade-out");
+                        setTimeout(() => {
+                            splashScreen.style.display = "none";
+                            mainScreen.style.display = "block";
+                        }, 500);
+                    }, 1500);
                 }
             }
 
-            function showMainScreen() {
-                splashScreen.style.display = "none";
-                mainScreen.style.display = "block";
+            // Fetch class data from Firebase
+            async function fetchClassData(className) {
+                try {
+                    const snapshot = await database.ref(`classes/${className}`).once('value');
+                    const students = snapshot.val();
+                    return students ? students.filter((student, index) => index !== 0) : [];
+                } catch (error) {
+                    showError("Failed to load class data. Please try again.");
+                    console.error("Firebase error:", error);
+                    return [];
+                }
             }
 
+            // Show error message
+            function showError(message) {
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                errorMessage.style.display = "block";
+                setTimeout(() => errorMessage.style.display = "none", 5000);
+            }
+
+            // Display students in the table
             function displayStudents(students) {
                 resultsTableBody.innerHTML = "";
+                
+                if (students.length === 0) {
+                    resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: #6c757d;">
+                                <i class="fas fa-info-circle"></i> No students found
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
                 students.forEach((student, index) => {
                     const row = document.createElement("tr");
-                    row.innerHTML = `<td>${index + 1}</td><td>${student}</td>`;
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${student || "Unknown"}</td>`;
                     resultsTableBody.appendChild(row);
                 });
             }
 
-            // Modified Search Button Click Handler
+            // Search button handler
             searchBtn.addEventListener("click", async () => {
                 const input = rollInput.value.trim();
                 const selectedClass = document.getElementById("class-selector").value;
@@ -151,62 +427,86 @@
                 }
 
                 const students = await fetchClassData(selectedClass);
+                const rollNumbers = input.split(/[\s,]+/).map(num => parseInt(num.trim()));
                 
-                // Process roll numbers (1-based index from your database)
-                const rollNumbers = input.split(/[\s,]+/).map(num => {
-                    const parsed = parseInt(num.trim());
-                    return isNaN(parsed) ? null : parsed;
-                });
-
                 const errors = [];
                 const validStudents = [];
                 
                 rollNumbers.forEach((roll) => {
-                    if (roll === null) {
-                        errors.push(`Invalid number: ${roll}`);
+                    if (isNaN(roll)) {
+                        errors.push(`"${roll}" is not a valid number`);
                     } else if (roll < 1 || roll > students.length) {
-                        errors.push(`Roll ${roll}: Out of range (1-${students.length})`);
+                        errors.push(`Roll ${roll} is out of range (1-${students.length})`);
                     } else {
                         validStudents.push(students[roll - 1]);
                     }
                 });
 
                 if (errors.length > 0) {
-                    showError("Invalid input:\n" + errors.join("\n"));
+                    showError(errors.join("<br>"));
                 }
 
                 if (validStudents.length > 0) {
                     displayStudents(validStudents);
                     shareBtn.style.display = "inline-block";
-                }
-            });
-
-            // Modified View All Button
-            viewAllBtn.addEventListener("click", async () => {
-                const selectedClass = document.getElementById("class-selector").value;
-                const students = await fetchClassData(selectedClass);
-                
-                if (students.length > 0) {
-                    displayStudents(students);
+                } else {
+                    resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: #6c757d;">
+                                <i class="fas fa-info-circle"></i> No valid students found
+                            </td>
+                        </tr>`;
                     shareBtn.style.display = "none";
                 }
             });
 
-            // Keep your existing shareBtn click handler
-            shareBtn.addEventListener("click", () => {
-                const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
-                const shareContent = rows.map(row => row.cells[1].textContent).join("\n");
-                
-                if (navigator.share) {
-                    navigator.share({ 
-                        title: "Absentees List",
-                        text: `Today's Absentees:\n${shareContent}`
-                    });
-                } else {
-                    alert("Sharing not supported - Copy to clipboard instead");
-                    navigator.clipboard.writeText(shareContent);
-                }
+            // View All button handler
+            viewAllBtn.addEventListener("click", async () => {
+                const selectedClass = document.getElementById("class-selector").value;
+                const students = await fetchClassData(selectedClass);
+                displayStudents(students);
+                shareBtn.style.display = "none";
             });
+
+            // Share button handler
+            shareBtn.addEventListener("click", () => {
+    const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
+    const shareContent = rows.map(row => `${row.cells[0].textContent}. ${row.cells[1].textContent}`).join("\n");
+
+    // 🗓️ Generate today's date in DD-MM-YYYY format
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    // 📋 Full message content
+    const className = document.getElementById("class-selector").value;
+    const shareText = `Today's Absentees (${formattedDate})\nClass: ${className}\n\n${shareContent}`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: `Today's Absentees (${formattedDate})`,
+            text: shareText
+        }).catch(err => {
+            console.error("Share failed:", err);
+            copyToClipboard(shareText);
+        });
+    } else {
+        copyToClipboard(shareText);
+    }
+});
+
+
+            // Copy to clipboard fallback
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text)
+                    .then(() => alert("List copied to clipboard!"))
+                    .catch(err => {
+                        console.error("Copy failed:", err);
+                        alert("Couldn't copy to clipboard. Please try manually.");
+                    });
+            }
 
             // Start the app
             typeMessage(welcomeMessage);
