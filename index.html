@@ -78,6 +78,12 @@
             font-weight: 300;
         }
 
+        /* Login Screen */
+        #login-screen {
+            display: none;
+            padding: 30px 0;
+        }
+
         /* Main Screen */
         #main-screen {
             display: none;
@@ -125,7 +131,7 @@
             color: var(--dark);
         }
 
-        select, input[type="text"] {
+        select, input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -135,7 +141,7 @@
             transition: var(--transition);
         }
 
-        select:focus, input[type="text"]:focus {
+        select:focus, input[type="text"]:focus, input[type="password"]:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
@@ -265,12 +271,36 @@
         <p id="message"></p>
     </div>
 
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="container">
+            <div class="control-panel">
+                <h2 style="margin-bottom: 20px; color: var(--primary);">🔐 Login to AbsentEase</h2>
+                <div class="form-group">
+                    <label for="email-input"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="text" id="email-input" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="password-input"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password-input" placeholder="Enter your password">
+                </div>
+                <div class="btn-group">
+                    <button id="login-btn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Login</button>
+                </div>
+                <div id="login-error" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Screen -->
     <div id="main-screen">
         <div class="container">
             <header>
                 <img id="header-logo" src="https://i.imgur.com/WhNJloy.jpeg" alt="Logo">
-                <h1>AbsentEase </h1>
+                <h1>AbsentEase</h1>
+                <button id="logout-btn" class="btn-secondary" style="margin-left:auto;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </header>
 
             <div class="control-panel">
@@ -327,27 +357,40 @@
     <!-- Firebase & App Script -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script>
-        // Your Firebase config (replace with your actual config)
-        const firebaseConfig = {
-  apiKey: "AIzaSyBBSXDKjH2kk7c8oaMPEZlDPrbi9L4is4",
-  authDomain: "cvkm-52da0.firebaseapp.com",
-  databaseURL: "https://cvkm-52da0-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "cvkm-52da0",
-  storageBucket: "cvkm-52da0.appspot.com",
-  messagingSenderId: "733824760937",
-  appId: "1:733824760937:web:b4522b9c219a0d5ab717e5"
-};
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
+    <script>
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBSXDKjH2kk7c8oaMPEZlDPrbi9L4is4",
+            authDomain: "cvkm-52da0.firebaseapp.com",
+            databaseURL: "https://cvkm-52da0-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cvkm-52da0",
+            storageBucket: "cvkm-52da0.appspot.com",
+            messagingSenderId: "733824760937",
+            appId: "1:733824760937:web:b4522b9c219a0d5ab717e5"
+        };
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const auth = firebase.auth();
 
         document.addEventListener("DOMContentLoaded", function () {
+            // UI Elements
             const splashScreen = document.getElementById("splash-screen");
+            const loginScreen = document.getElementById("login-screen");
             const mainScreen = document.getElementById("main-screen");
             const messageEl = document.getElementById("message");
+            
+            // Login elements
+            const loginBtn = document.getElementById("login-btn");
+            const emailInput = document.getElementById("email-input");
+            const passwordInput = document.getElementById("password-input");
+            const loginError = document.getElementById("login-error");
+            const logoutBtn = document.getElementById("logout-btn");
+            
+            // Main app elements
             const errorMessage = document.getElementById("error-message");
             const rollInput = document.getElementById("roll-input");
             const searchBtn = document.getElementById("search-btn");
@@ -355,22 +398,62 @@
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
 
-          const welcomeMessage = "Welcome To Our App!\nMade by 2023-2025 CS Batch students";
-          // Typing animation for splash screen
+            const welcomeMessage = "Welcome To Our App!\nMade by 2023-2025 CS Batch students";
+            
+            // Typing animation for splash screen
             function typeMessage(msg, index = 0) {
                 if (index < msg.length) {
                     messageEl.innerHTML += msg[index] === '\n' ? '<br>' : msg[index];
                     setTimeout(() => typeMessage(msg, index + 1), 50);
-                } else {
-                    setTimeout(() => {
-                        splashScreen.classList.add("fade-out");
-                        setTimeout(() => {
-                            splashScreen.style.display = "none";
-                            mainScreen.style.display = "block";
-                        }, 500);
-                    }, 1500);
                 }
             }
+
+            // Handle Firebase auth state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    splashScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        splashScreen.style.display = "none";
+                        loginScreen.style.display = "none";
+                        mainScreen.style.display = "block";
+                    }, 500);
+                } else {
+                    // User is signed out
+                    splashScreen.classList.add("fade-out");
+                    setTimeout(() => {
+                        splashScreen.style.display = "none";
+                        mainScreen.style.display = "none";
+                        loginScreen.style.display = "block";
+                    }, 500);
+                }
+            });
+
+            // Login button event
+            loginBtn.addEventListener("click", () => {
+                const email = emailInput.value.trim(); 
+                const password = passwordInput.value;
+
+                if (!email || !password) {
+                    loginError.innerHTML = "Please fill in both fields.";
+                    loginError.style.display = "block";
+                    return;
+                }
+
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        loginError.style.display = "none";
+                    })
+                    .catch(error => {
+                        loginError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+                        loginError.style.display = "block";
+                    });
+            });
+
+            // Logout button event
+            logoutBtn.addEventListener("click", () => {
+                auth.signOut();
+            });
 
             // Fetch class data from Firebase
             async function fetchClassData(className) {
