@@ -469,33 +469,31 @@
 
             // Share button handler
             shareBtn.addEventListener("click", () => {
-    const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
-    const shareContent = rows.map(row => `${row.cells[0].textContent}. ${row.cells[1].textContent}`).join("\n");
+                const rows = Array.from(resultsTableBody.querySelectorAll("tr"));
+                const shareContent = rows.map(row => `${row.cells[0].textContent}. ${row.cells[1].textContent}`).join("\n");
 
-    // 🗓️ Generate today's date in DD-MM-YYYY format
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const year = today.getFullYear();
-    const formattedDate = `${day}-${month}-${year}`;
+                // Generate today's date in DD-MM-YYYY format
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const year = today.getFullYear();
+                const formattedDate = `${day}-${month}-${year}`;
 
-    // 📋 Full message content
-    const className = document.getElementById("class-selector").value;
-    const shareText = `Today's Absentees (${formattedDate})\nClass: ${className}\n\n${shareContent}`;
+                // Full message content with divider
+                const shareText = `Today's Absentees (${formattedDate})\n--------------------------------\n${shareContent}`;
 
-    if (navigator.share) {
-        navigator.share({
-            title: `Today's Absentees (${formattedDate})`,
-            text: shareText
-        }).catch(err => {
-            console.error("Share failed:", err);
-            copyToClipboard(shareText);
-        });
-    } else {
-        copyToClipboard(shareText);
-    }
-});
-
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Today's Absentees (${formattedDate})`,
+                        text: shareText
+                    }).catch(err => {
+                        console.error("Share failed:", err);
+                        copyToClipboard(shareText);
+                    });
+                } else {
+                    copyToClipboard(shareText);
+                }
+            });
 
             // Copy to clipboard fallback
             function copyToClipboard(text) {
