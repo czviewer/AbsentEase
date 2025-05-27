@@ -40,7 +40,6 @@
             padding: 0 20px;
         }
 
-        /* Splash Screen */
         #splash-screen {
             position: fixed;
             top: 0;
@@ -76,13 +75,11 @@
             font-weight: 300;
         }
 
-        /* Login Screen */
         #login-screen {
             display: none;
             padding: 30px 0;
         }
 
-        /* Main Screen */
         #main-screen {
             display: none;
             padding: 30px 0;
@@ -118,7 +115,6 @@
             min-width: 90px;
         }
 
-        /* Control Panel */
         .control-panel {
             background: white;
             border-radius: var(--border-radius);
@@ -206,7 +202,6 @@
             background-color: #3ab7d8;
         }
 
-        /* Results Table */
         .results-container {
             background: white;
             border-radius: var(--border-radius);
@@ -236,7 +231,6 @@
             background-color: #f8f9fa;
         }
 
-        /* Error Message */
         .error-message {
             color: var(--danger);
             background-color: #fdd;
@@ -247,7 +241,6 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .btn-group {
                 flex-direction: column;
@@ -287,13 +280,11 @@
     </style>
 </head>
 <body>
-    <!-- Splash Screen -->
     <div id="splash-screen">
         <img id="splash-logo" src="https://i.postimg.cc/BbnQvL6M/Mj-L4-Sl-T-removebg-preview.png" alt="AbsentEase Logo">
         <p id="message"></p>
     </div>
 
-    <!-- Login Screen -->
     <div id="login-screen">
         <div class="container">
             <div class="control-panel">
@@ -314,7 +305,6 @@
         </div>
     </div>
 
-    <!-- Main Screen -->
     <div id="main-screen">
         <div class="container">
             <header>
@@ -369,14 +359,12 @@
                         </tr>
                     </thead>
                     <tbody id="results-table-body">
-                        <!-- Results will appear here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Firebase & App Script -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
@@ -398,20 +386,17 @@
         const auth = firebase.auth();
 
         document.addEventListener("DOMContentLoaded", function () {
-            // UI Elements
             const splashScreen = document.getElementById("splash-screen");
             const loginScreen = document.getElementById("login-screen");
             const mainScreen = document.getElementById("main-screen");
             const messageEl = document.getElementById("message");
             
-            // Auth elements
             const loginBtn = document.getElementById("login-btn");
             const emailInput = document.getElementById("email-input");
             const passwordInput = document.getElementById("password-input");
             const loginError = document.getElementById("login-error");
             const logoutBtn = document.getElementById("logout-btn");
 
-            // Main app elements
             const errorMessage = document.getElementById("error-message");
             const rollInput = document.getElementById("roll-input");
             const searchBtn = document.getElementById("search-btn");
@@ -480,8 +465,73 @@
                 auth.signOut();
             });
 
-            // Rest of your application logic (search, view all, share) remains same
-            // ... [Keep all the existing application logic here] ...
+            let studentsRef;
+
+            document.getElementById('class-selector').addEventListener('change', () => {
+                const selectedClass = document.getElementById('class-selector').value;
+                studentsRef = database.ref(`students/${selectedClass}`);
+            });
+
+            searchBtn.addEventListener('click', async () => {
+                errorMessage.style.display = 'none';
+                const rollNumbers = rollInput.value.trim().split(/[,\s]+/).map(Number);
+                const selectedClass = document.getElementById('class-selector').value;
+
+                if (!rollNumbers.length || rollNumbers.some(isNaN)) {
+                    errorMessage.textContent = "Please enter valid roll numbers";
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    const snapshot = await studentsRef.once('value');
+                    const students = snapshot.val() || {};
+                    
+                    const results = rollNumbers.map(roll => {
+                        const student = students[roll];
+                        return student ? 
+                            `<tr><td>${roll}</td><td>${student.name}</td></tr>` :
+                            `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
+                    });
+
+                    resultsTableBody.innerHTML = results.join('');
+                    shareBtn.style.display = 'inline-block';
+                } catch (error) {
+                    errorMessage.textContent = `Error fetching data: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                }
+            });
+
+            viewAllBtn.addEventListener('click', async () => {
+                errorMessage.style.display = 'none';
+                try {
+                    const snapshot = await studentsRef.once('value');
+                    const students = snapshot.val() || {};
+                    
+                    const results = Object.entries(students).map(([roll, data]) => 
+                        `<tr><td>${roll}</td><td>${data.name}</td></tr>`
+                    );
+
+                    resultsTableBody.innerHTML = results.join('');
+                    shareBtn.style.display = 'inline-block';
+                    rollInput.value = '';
+                } catch (error) {
+                    errorMessage.textContent = `Error fetching data: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                }
+            });
+
+            shareBtn.addEventListener('click', () => {
+                const tableData = Array.from(resultsTableBody.querySelectorAll('tr'))
+                    .map(row => `${row.cells[0].textContent},${row.cells[1].textContent}`)
+                    .join('\n');
+                
+                navigator.clipboard.writeText(tableData)
+                    .then(() => alert('Results copied to clipboard!'))
+                    .catch(() => alert('Failed to copy results'));
+            });
+
+            document.getElementById('class-selector').dispatchEvent(new Event('change'));
         });
     </script>
 </body>
