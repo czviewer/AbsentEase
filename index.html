@@ -472,6 +472,7 @@
                 studentsRef = database.ref(`classes/${selectedClass}`);
             });
 
+           
             searchBtn.addEventListener('click', async () => {
     errorMessage.style.display = 'none';
 
@@ -493,12 +494,21 @@
         const snapshot = await studentsRef.once('value');
         const studentArray = snapshot.val() || [];
 
-        const results = rollNumbers.map(roll => {
-            const name = studentArray[roll];
-            return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
-                `<tr><td>${roll}</td><td>${name}</td></tr>` :
-                `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
-        });
+        // Create array of {roll, name} objects
+        const results = rollNumbers
+            .map(roll => ({
+                roll,
+                name: studentArray[roll],
+                isValid: studentArray[roll] && studentArray[roll] !== "Coming Soon" && studentArray[roll] !== "\"Coming Soon\""
+            }))
+            // Sort by roll number
+            .sort((a, b) => a.roll - b.roll)
+            // Convert to HTML rows
+            .map(item => 
+                item.isValid ?
+                    `<tr><td>${item.roll}</td><td>${item.name}</td></tr>` :
+                    `<tr class="error-row"><td>${item.roll}</td><td>Not Found</td></tr>`
+            );
 
         resultsTableBody.innerHTML = results.join('');
         shareBtn.style.display = 'inline-block';
@@ -507,38 +517,6 @@
         errorMessage.style.display = 'block';
     }
 });
-
-            searchBtn.addEventListener('click', async () => {
-    errorMessage.style.display = 'none';
-
-    const rollInputVal = rollInput.value.trim();
-    const rollNumbers = rollInputVal.split(/[,\s]+/).map(num => parseInt(num)).filter(n => !isNaN(n));
-
-    if (!rollNumbers.length) {
-        errorMessage.textContent = "Please enter valid roll numbers";
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    try {
-        const snapshot = await studentsRef.once('value');
-        const studentArray = snapshot.val() || [];
-
-        const results = rollNumbers.map(roll => {
-            const name = studentArray[roll];
-            return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
-                `<tr><td>${roll}</td><td>${name}</td></tr>` :
-                `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
-        });
-
-        resultsTableBody.innerHTML = results.join('');
-        shareBtn.style.display = 'inline-block';
-    } catch (error) {
-        errorMessage.textContent = `Error fetching data: ${error.message}`;
-        errorMessage.style.display = 'block';
-    }
-});
-
 viewAllBtn.addEventListener('click', async () => {
     errorMessage.style.display = 'none';
     try {
@@ -560,30 +538,37 @@ viewAllBtn.addEventListener('click', async () => {
         errorMessage.style.display = 'block';
     }
 });
-      shareBtn.addEventListener('click', () => {
+
+shareBtn.addEventListener('click', () => {
+    // Get current date in DD-MM-YYYY format
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    const todayFormatted = `${dd}-${mm}-${yyyy}`;
+
     // Get all the rows from the table
     const rows = resultsTableBody.querySelectorAll('tr');
     
     if (rows.length === 0) {
-        errorMessage.textContent = "No data to share";
+        errorMessage.textContent = "No absentees to share";
         errorMessage.style.display = 'block';
         return;
     }
 
-    // Format the data for sharing
-    let shareText = `AbsentEase Report - Class ${document.getElementById('class-selector').value}\n\n`;
-    shareText += 'Roll No. | Student Name\n';
-    shareText += '--------|-------------\n';
+    // Format the data for sharing in your requested structure
+    let shareText = `Today's Absentees (${todayFormatted})\n`;
+    shareText += '------------------------------------------\n';
     
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        shareText += `${cells[0].textContent.padEnd(8)} | ${cells[1].textContent}\n`;
+        shareText += `${cells[1].textContent}\n`; // Only student names
     });
 
     // Try Web Share API first (mobile devices)
     if (navigator.share) {
         navigator.share({
-            title: 'AbsentEase Report',
+            title: `Today's Absentees - ${todayFormatted}`,
             text: shareText
         }).catch(err => {
             console.error('Error sharing:', err);
@@ -596,19 +581,28 @@ viewAllBtn.addEventListener('click', async () => {
 
 // Fallback for browsers that don't support Web Share API
 function fallbackShare(text) {
-    // Copy to clipboard
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Data copied to clipboard! You can now paste it anywhere.');
-    }).catch(err => {
-        console.error('Failed to copy:', err);
+    // Create a temporary textarea for better copy compatibility
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (successful) {
+            alert('Absentees list copied to clipboard!');
+        } else {
+            throw new Error('Copy failed');
+        }
+    } catch (err) {
         // Final fallback - show the data in an alert
-        alert('Share this data:\n\n' + text);
-    });
+        alert('Absentees list:\n\n' + text);
+    }
 }
 
-
-            document.getElementById('class-selector').dispatchEvent(new Event('change'));
-        });
+document.getElementById('class-selector').dispatchEvent(new Event('change'));        });
     </script>
 </body>
 </html>
