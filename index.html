@@ -469,19 +469,20 @@
 
             document.getElementById('class-selector').addEventListener('change', () => {
                 const selectedClass = document.getElementById('class-selector').value;
-                studentsRef = database.ref(`students/${selectedClass}`);
+                studentsRef = database.ref(`classes/${selectedClass}`);
             });
 
             searchBtn.addEventListener('click', async () => {
-                errorMessage.style.display = 'none';
-                const rollNumbers = rollInput.value.trim().split(/[,\s]+/).map(Number);
-                const selectedClass = document.getElementById('class-selector').value;
+                const snapshot = await studentsRef.once('value');
+const studentArray = snapshot.val() || [];
 
-                if (!rollNumbers.length || rollNumbers.some(isNaN)) {
-                    errorMessage.textContent = "Please enter valid roll numbers";
-                    errorMessage.style.display = 'block';
-                    return;
-                }
+const results = rollNumbers.map(roll => {
+    const name = studentArray[roll];
+    return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
+        `<tr><td>${roll}</td><td>${name}</td></tr>` :
+        `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
+});
+
 
                 try {
                     const snapshot = await studentsRef.once('value');
@@ -502,34 +503,59 @@
                 }
             });
 
-            viewAllBtn.addEventListener('click', async () => {
-                errorMessage.style.display = 'none';
-                try {
-                    const snapshot = await studentsRef.once('value');
-                    const students = snapshot.val() || {};
-                    
-                    const results = Object.entries(students).map(([roll, data]) => 
-                        `<tr><td>${roll}</td><td>${data.name}</td></tr>`
-                    );
+            searchBtn.addEventListener('click', async () => {
+    errorMessage.style.display = 'none';
 
-                    resultsTableBody.innerHTML = results.join('');
-                    shareBtn.style.display = 'inline-block';
-                    rollInput.value = '';
-                } catch (error) {
-                    errorMessage.textContent = `Error fetching data: ${error.message}`;
-                    errorMessage.style.display = 'block';
-                }
-            });
+    const rollInputVal = rollInput.value.trim();
+    const rollNumbers = rollInputVal.split(/[,\s]+/).map(num => parseInt(num)).filter(n => !isNaN(n));
 
-            shareBtn.addEventListener('click', () => {
-                const tableData = Array.from(resultsTableBody.querySelectorAll('tr'))
-                    .map(row => `${row.cells[0].textContent},${row.cells[1].textContent}`)
-                    .join('\n');
-                
-                navigator.clipboard.writeText(tableData)
-                    .then(() => alert('Results copied to clipboard!'))
-                    .catch(() => alert('Failed to copy results'));
-            });
+    if (!rollNumbers.length) {
+        errorMessage.textContent = "Please enter valid roll numbers";
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    try {
+        const snapshot = await studentsRef.once('value');
+        const studentArray = snapshot.val() || [];
+
+        const results = rollNumbers.map(roll => {
+            const name = studentArray[roll];
+            return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
+                `<tr><td>${roll}</td><td>${name}</td></tr>` :
+                `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
+        });
+
+        resultsTableBody.innerHTML = results.join('');
+        shareBtn.style.display = 'inline-block';
+    } catch (error) {
+        errorMessage.textContent = `Error fetching data: ${error.message}`;
+        errorMessage.style.display = 'block';
+    }
+});
+
+viewAllBtn.addEventListener('click', async () => {
+    errorMessage.style.display = 'none';
+    try {
+        const snapshot = await studentsRef.once('value');
+        const studentArray = snapshot.val() || [];
+
+        const results = studentArray
+            .map((name, index) => {
+                if (!name || name === "Coming Soon" || name === "\"Coming Soon\"") return null;
+                return `<tr><td>${index}</td><td>${name}</td></tr>`;
+            })
+            .filter(row => row !== null);
+
+        resultsTableBody.innerHTML = results.join('');
+        shareBtn.style.display = 'inline-block';
+        rollInput.value = '';
+    } catch (error) {
+        errorMessage.textContent = `Error fetching data: ${error.message}`;
+        errorMessage.style.display = 'block';
+    }
+});
+
 
             document.getElementById('class-selector').dispatchEvent(new Event('change'));
         });
