@@ -473,35 +473,40 @@
             });
 
             searchBtn.addEventListener('click', async () => {
-                const snapshot = await studentsRef.once('value');
-const studentArray = snapshot.val() || [];
+    errorMessage.style.display = 'none';
 
-const results = rollNumbers.map(roll => {
-    const name = studentArray[roll];
-    return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
-        `<tr><td>${roll}</td><td>${name}</td></tr>` :
-        `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
+    const rollInputVal = rollInput.value.trim();
+    // Convert to numbers, filter out non-numbers, then remove duplicates
+    const rollNumbers = [...new Set(
+        rollInputVal.split(/[,\s]+/)
+            .map(num => parseInt(num))
+            .filter(n => !isNaN(n))
+    )];
+
+    if (!rollNumbers.length) {
+        errorMessage.textContent = "Please enter valid roll numbers";
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    try {
+        const snapshot = await studentsRef.once('value');
+        const studentArray = snapshot.val() || [];
+
+        const results = rollNumbers.map(roll => {
+            const name = studentArray[roll];
+            return name && name !== "Coming Soon" && name !== "\"Coming Soon\"" ?
+                `<tr><td>${roll}</td><td>${name}</td></tr>` :
+                `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
+        });
+
+        resultsTableBody.innerHTML = results.join('');
+        shareBtn.style.display = 'inline-block';
+    } catch (error) {
+        errorMessage.textContent = `Error fetching data: ${error.message}`;
+        errorMessage.style.display = 'block';
+    }
 });
-
-
-                try {
-                    const snapshot = await studentsRef.once('value');
-                    const students = snapshot.val() || {};
-                    
-                    const results = rollNumbers.map(roll => {
-                        const student = students[roll];
-                        return student ? 
-                            `<tr><td>${roll}</td><td>${student.name}</td></tr>` :
-                            `<tr class="error-row"><td>${roll}</td><td>Not Found</td></tr>`;
-                    });
-
-                    resultsTableBody.innerHTML = results.join('');
-                    shareBtn.style.display = 'inline-block';
-                } catch (error) {
-                    errorMessage.textContent = `Error fetching data: ${error.message}`;
-                    errorMessage.style.display = 'block';
-                }
-            });
 
             searchBtn.addEventListener('click', async () => {
     errorMessage.style.display = 'none';
