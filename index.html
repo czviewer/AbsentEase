@@ -560,6 +560,51 @@ viewAllBtn.addEventListener('click', async () => {
         errorMessage.style.display = 'block';
     }
 });
+      shareBtn.addEventListener('click', () => {
+    // Get all the rows from the table
+    const rows = resultsTableBody.querySelectorAll('tr');
+    
+    if (rows.length === 0) {
+        errorMessage.textContent = "No data to share";
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    // Format the data for sharing
+    let shareText = `AbsentEase Report - Class ${document.getElementById('class-selector').value}\n\n`;
+    shareText += 'Roll No. | Student Name\n';
+    shareText += '--------|-------------\n';
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        shareText += `${cells[0].textContent.padEnd(8)} | ${cells[1].textContent}\n`;
+    });
+
+    // Try Web Share API first (mobile devices)
+    if (navigator.share) {
+        navigator.share({
+            title: 'AbsentEase Report',
+            text: shareText
+        }).catch(err => {
+            console.error('Error sharing:', err);
+            fallbackShare(shareText);
+        });
+    } else {
+        fallbackShare(shareText);
+    }
+});
+
+// Fallback for browsers that don't support Web Share API
+function fallbackShare(text) {
+    // Copy to clipboard
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Data copied to clipboard! You can now paste it anywhere.');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        // Final fallback - show the data in an alert
+        alert('Share this data:\n\n' + text);
+    });
+}
 
 
             document.getElementById('class-selector').dispatchEvent(new Event('change'));
