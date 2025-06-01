@@ -798,6 +798,94 @@
     padding: 4px 12px;
   }
 }
+        @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-title h1 {
+    font-size: 1.4rem;
+  }
+
+  .role-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+
+  .user-info {
+    font-size: 0.85rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .header-actions .btn {
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    min-width: unset;
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  .btn i {
+    font-size: 0.9rem;
+  }
+
+  #header-logo {
+    width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    font-size: 0.8rem;
+    padding: 7px 12px;
+  }
+
+  .tab {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  select {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+  }
+
+  label {
+    font-size: 0.85rem;
+  }
+
+  .summary-card h3 {
+    font-size: 1rem;
+  }
+
+  .summary-card .value {
+    font-size: 1.6rem;
+  }
+
+  .summary-card .subtext {
+    font-size: 0.85rem;
+  }
+}
+
 
     </style>
 </head>
