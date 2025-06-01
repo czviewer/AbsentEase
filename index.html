@@ -746,6 +746,58 @@
     margin-top: 5px;
   }
 }
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .header-actions .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+
+  .user-info {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .app-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #header-logo {
+    width: 48px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .role-badge {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+}
 
     </style>
 </head>
