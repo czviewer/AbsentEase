@@ -750,114 +750,89 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
 
   .header-content {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .header-actions {
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .header-actions .btn {
-    flex: 1 1 auto;
-    min-width: 120px;
-  }
-
-  .user-info {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .app-title {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  #header-logo {
-    width: 48px;
-  }
-
-  h1 {
-    font-size: 1.6rem;
-  }
-
-  .role-badge {
-    font-size: 0.8rem;
-    padding: 4px 12px;
-  }
-}
-        @media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .header-content {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .app-title h1 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
 
   .role-badge {
-    font-size: 0.75rem;
-    padding: 4px 10px;
+    font-size: 0.85rem;
+    padding: 5px 12px;
   }
 
   .user-info {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .header-actions {
+    flex-wrap: wrap;
     width: 100%;
-    display: flex;
     justify-content: flex-start;
     gap: 10px;
-    flex-wrap: wrap;
   }
 
   .header-actions .btn {
-    font-size: 0.85rem;
-    padding: 8px 14px;
-    min-width: unset;
-    flex: 1 1 calc(50% - 10px);
-  }
-
-  .btn i {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    padding: 10px 18px;
+    min-width: 120px;
   }
 
   #header-logo {
-    width: 40px;
+    width: 42px;
+  }
+
+  .btn i {
+    font-size: 1rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  select {
+    font-size: 0.95rem;
+    padding: 12px 16px;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  .tab {
+    font-size: 0.95rem;
+    padding: 10px 16px;
+  }
+
+  .summary-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .summary-card .value {
+    font-size: 2rem;
+  }
+
+  .summary-card .subtext {
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
   .btn {
-    font-size: 0.8rem;
-    padding: 7px 12px;
+    font-size: 0.9rem;
+    padding: 10px 16px;
   }
 
   .tab {
-    padding: 8px 12px;
-    font-size: 0.85rem;
+    padding: 10px 14px;
+    font-size: 0.9rem;
   }
 
   input[type="text"],
@@ -869,23 +844,18 @@
     padding: 10px 14px;
   }
 
-  label {
-    font-size: 0.85rem;
-  }
-
   .summary-card h3 {
     font-size: 1rem;
   }
 
   .summary-card .value {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .summary-card .subtext {
     font-size: 0.85rem;
   }
 }
-
 
     </style>
 </head>
