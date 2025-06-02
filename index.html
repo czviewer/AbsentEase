@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsentEase</title>
+    <title>AbsentEase - Admin Panel Fixed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -420,10 +420,6 @@
         .tab-content.active {
             display: block;
         }
-        .tab-content {
-  padding-top: 12px;
-}
-
 
         .disabled-option {
             background-color: var(--greyed-out);
@@ -718,93 +714,37 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 768px) {
-  .header {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .header-content {
-    width: 100%;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .header .btn {
-    flex: 1 1 calc(50% - 10px);
-    min-width: unset;
-  }
-
-  .user-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .role-badge {
-    margin-top: 5px;
-  }
-}
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px;
-  }
-
-  .header-actions {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: flex-start;
-  }
-
-  .header-actions .btn {
-    flex: 1 1 calc(50% - 12px);
-    min-width: 130px;
-    padding: 12px 18px;
-    font-size: 0.95rem;
-  }
-
-  .tab {
-    font-size: 1rem;
-    padding: 14px 20px; /* 👈 Increased height */
-    min-height: 48px;
-  }
-
-  .tab-content {
-    padding-top: 10px;
-  }
-
-  .role-badge {
-    font-size: 0.85rem;
-    padding: 6px 12px;
-  }
-
-  .user-info {
-    font-size: 0.9rem;
-    gap: 4px;
-  }
+        /* 🌟 Modern Login Button Style */
+.modern-login-btn {
+  background: linear-gradient(135deg, #4cc9f0, #4361ee);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  border-radius: 40px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 14px rgba(67, 97, 238, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-@media (max-width: 480px) {
-  .tab {
-    padding: 14px 18px;  /* 👈 Also applies extra vertical spacing on smaller screens */
-  }
-
-  .btn {
-    font-size: 0.9rem;
-    padding: 10px 16px;
-  }
+.modern-login-btn i {
+  font-size: 1.2rem;
 }
 
+.modern-login-btn:hover {
+  background: linear-gradient(135deg, #4361ee, #3a56d4);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(67, 97, 238, 0.5);
+}
+
+.modern-login-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+}
 
     </style>
 </head>
@@ -1301,6 +1241,7 @@
         let userDisplayName = 'John Doe';
         let userAssignedClass = null; // For teachers
         let allClasses = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'D1', 'D2'];
+        let usersLoaded = false; // Track if users have been loaded
 
         document.addEventListener("DOMContentLoaded", function () {
             const splashScreen = document.getElementById("splash-screen");
@@ -1332,7 +1273,7 @@
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
 
-            const welcomeMessage = "Welcome To AbsentEase!\nMade By 2023-25 Cs Students";
+            const welcomeMessage = "Welcome To AbsentEase!\nMade By 2023-25 Cs Students..";
 
             // Admin panel elements
             const addUserBtn = document.getElementById("add-user-btn");
@@ -1356,10 +1297,6 @@
             const cancelEditBtn = document.getElementById("cancel-edit-btn");
             const editUserError = document.getElementById("edit-user-error");
             const editUserSuccess = document.getElementById("edit-user-success");
-            const defaultTab = document.querySelector('.tab[data-tab="class"]');
-    if (defaultTab) {
-        defaultTab.click(); // Activates the "Class Attendance" tab on load
-    }
 
             // Variables for user management
             let usersRef = database.ref('users');
@@ -1506,7 +1443,7 @@
                 document.getElementById('admin-user-name').textContent = userDisplayName;
                 
                 // Show/hide admin panel button based on role
-                if (userRole === 'administrator' ) {
+                if (userRole === 'administrator' || userRole === 'admin') {
                     adminPanelBtn.style.display = 'inline-block';
                     adminPanelBtn2.style.display = 'inline-block';
                 } else {
@@ -1519,32 +1456,34 @@
             }
             
             // Update class selector based on user role
-            function updateClassSelector() {
-    const classSelector = document.getElementById('class-selector');
-    const attendanceClassSelector = document.getElementById('attendance-class-selector');
-    const studentClassSelector = document.getElementById('student-class-selector');
-
+function updateClassSelector() {
+    const classSelector = document.getElementById('class-selector'); // For sharing
+    const attendanceClassSelector = document.getElementById('attendance-class-selector'); // Attendance records
+    const studentClassSelector = document.getElementById('student-class-selector'); // Individual student records
+    
     // Clear existing options
     classSelector.innerHTML = '';
     attendanceClassSelector.innerHTML = '';
     studentClassSelector.innerHTML = '';
-
-    // 👇 Make sharing section dropdown always have ALL classes
+    
+    // 1. SHARING SECTION (main screen) - NO RESTRICTIONS
     allClasses.forEach(cls => {
         const option = document.createElement('option');
         option.value = cls;
         option.textContent = `Class ${cls}`;
         classSelector.appendChild(option.cloneNode(true));
     });
-
+    
+    // 2. ATTENDANCE SECTION - ROLE-BASED RESTRICTIONS
     if (userRole === 'teacher' && userAssignedClass) {
-        // 👇 Only restrict attendance and student history dropdowns for teacher
+        // Teachers only see their assigned class
         const option = document.createElement('option');
         option.value = userAssignedClass;
         option.textContent = `Class ${userAssignedClass}`;
         attendanceClassSelector.appendChild(option.cloneNode(true));
         studentClassSelector.appendChild(option.cloneNode(true));
-    } else {
+    } else if (userRole === 'administrator' || userRole === 'admin' || userRole === 'principal') {
+        // Admins/principals see all classes
         allClasses.forEach(cls => {
             const option = document.createElement('option');
             option.value = cls;
@@ -1553,12 +1492,7 @@
             studentClassSelector.appendChild(option.cloneNode(true));
         });
     }
-
-    // 🛠️ Always set studentsRef initially to selected class in dropdown (first option)
-    studentsRef = database.ref(`classes/${classSelector.value}`);
 }
-
-
 
             auth.onAuthStateChanged(async (user) => {
                 await handleSplashScreen();
@@ -1591,20 +1525,17 @@
                         updateUserUI();
                         
                         // Load users if admin
-                        if (userRole === 'administrator' || userRole === 'admin') {
+                        if (userRole === 'administrator' && !usersLoaded) {  
                             loadUsers();
+                            usersLoaded = true;
                         }
-                    } else {
-                        // User not authorized
-                        auth.signOut();
-                        loginError.innerHTML = "User account not found or disabled.";
-                        loginError.style.display = "block";
                     }
                 } else {
                     mainScreen.style.display = "none";
                     attendanceScreen.style.display = "none";
                     adminPanel.style.display = "none";
                     loginScreen.style.display = "block";
+                    usersLoaded = false; // Reset users loaded flag
                 }
             });
 
@@ -1662,12 +1593,20 @@
                 mainScreen.style.display = "none";
                 adminPanel.style.display = "block";
                 window.location.hash = '#admin';
+                if (userRole === 'administrator' && !usersLoaded) {
+                    loadUsers();
+                    usersLoaded = true;
+                }
             });
             
             adminPanelBtn2.addEventListener("click", () => {
                 attendanceScreen.style.display = "none";
                 adminPanel.style.display = "block";
                 window.location.hash = '#admin';
+                if (userRole === 'administrator' && !usersLoaded) {
+                    loadUsers();
+                    usersLoaded = true;
+                }
             });
 
             let studentsRef;
@@ -2079,7 +2018,7 @@
                         const userData = childSnapshot.val();
                         
                         // Skip the current user if it's the administrator
-                        if (userData.email === 'czkarthikr@gmail.com') return;
+                        // REMOVED THE CONDITION THAT WAS SKIPPING THE ADMIN USER
                         
                         const userItem = document.createElement('div');
                         userItem.className = 'admin-user-item';
