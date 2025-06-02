@@ -1443,13 +1443,14 @@
                 document.getElementById('admin-user-name').textContent = userDisplayName;
                 
                 // Show/hide admin panel button based on role
-                if (userRole === 'administrator' || userRole === 'admin') {
-                    adminPanelBtn.style.display = 'inline-block';
-                    adminPanelBtn2.style.display = 'inline-block';
-                } else {
-                    adminPanelBtn.style.display = 'none';
-                    adminPanelBtn2.style.display = 'none';
-                }
+                if (userRole === 'administrator') {
+    adminPanelBtn.style.display = 'inline-block';
+    adminPanelBtn2.style.display = 'inline-block';
+} else {
+    adminPanelBtn.style.display = 'none';
+    adminPanelBtn2.style.display = 'none';
+}
+
                 
                 // Update class selector based on role
                 updateClassSelector();
@@ -1955,58 +1956,63 @@ function updateClassSelector() {
                 }
             });
 
-            // Add new user in admin panel
-            addUserBtn.addEventListener('click', async () => {
-                const email = newUserEmail.value.trim();
-                const password = newUserPassword.value;
-                const name = newUserName.value.trim();
-                const classAssignment = selectedRole === 'teacher' ? newUserClass.value : null;
-                
-                adminError.style.display = 'none';
-                adminSuccess.style.display = 'none';
-                
-                if (!email || !password || !name) {
-                    adminError.textContent = "Please fill in all fields";
-                    adminError.style.display = 'block';
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    adminError.textContent = "Password must be at least 6 characters";
-                    adminError.style.display = 'block';
-                    return;
-                }
-                
-                try {
-                    // Create the user
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    const user = userCredential.user;
-                    
-                    // Update profile
-                    await user.updateProfile({ displayName: name });
-                    
-                    // Save to database
-                    await usersRef.child(user.uid).set({
-                        email: email,
-                        name: name,
-                        role: selectedRole,
-                        class: classAssignment
-                    });
-                    
-                    // Show success message
-                    adminSuccess.textContent = `User ${email} created successfully!`;
-                    adminSuccess.style.display = 'block';
-                    
-                    // Clear form
-                    newUserEmail.value = '';
-                    newUserPassword.value = '';
-                    newUserName.value = '';
-                    
-                } catch (error) {
-                    adminError.textContent = `Error creating user: ${error.message}`;
-                    adminError.style.display = 'block';
-                }
-            });
+           // ✅ Add new user without logging out current admin
+addUserBtn.addEventListener('click', async () => {
+    const email = newUserEmail.value.trim();
+    const password = newUserPassword.value;
+    const name = newUserName.value.trim();
+    const classAssignment = selectedRole === 'teacher' ? newUserClass.value : null;
+
+    adminError.style.display = 'none';
+    adminSuccess.style.display = 'none';
+
+    if (!email || !password || !name) {
+        adminError.textContent = "⚠️ Please fill in all fields!";
+        adminError.style.display = 'block';
+        return;
+    }
+
+    if (password.length < 6) {
+        adminError.textContent = "🔐 Password must be at least 6 characters!";
+        adminError.style.display = 'block';
+        return;
+    }
+
+    try {
+        // ✨ Create Secondary App to prevent logout
+        const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+        const secondaryAuth = secondaryApp.auth();
+
+        const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        await database.ref('users/' + user.uid).set({
+            email: email,
+            name: name,
+            role: selectedRole,
+            class: classAssignment
+        });
+
+        // ✅ Optional: Set displayName for new user (not critical)
+        await user.updateProfile({ displayName: name });
+
+        adminSuccess.textContent = `✅ User "${email}" created successfully!`;
+        adminSuccess.style.display = 'block';
+
+        // Clear form inputs
+        newUserEmail.value = '';
+        newUserPassword.value = '';
+        newUserName.value = '';
+        loadUsers(); // 🌀 Refresh
+        // 🔁 Delete secondary app to avoid memory leak
+        await secondaryApp.delete();
+
+    } catch (error) {
+        adminError.textContent = `❌ Error: ${error.message}`;
+        adminError.style.display = 'block';
+    }
+});
+
             
             // Load users for admin panel
             function loadUsers() {
@@ -2048,8 +2054,17 @@ function updateClassSelector() {
                         });
                         
                         deleteBtn.addEventListener('click', () => {
-                            deleteUser(uid, userData.email);
-                        });
+    if (userData.role === 'administrator') {
+        alert("❌ You cannot delete an Administrator account!");
+        return;
+    }
+    if (confirm(`Are you sure you want to delete ${userData.email}?`)) {
+        // Delete user from database (optional: also remove from auth with admin SDK server-side)
+        usersRef.child(uid).remove();
+        loadUsers(); // Refresh the list after deletion
+    }
+});
+
                     });
                 });
             }
