@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsentEase - Admin Panel Fixed</title>
+    <title>AbsentEase </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -746,7 +746,222 @@
   box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
 }
 
-    </style>
+    
+/* 📱 Final Mobile Alignment Fixes */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .header-content {
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .app-title {
+    flex-direction: column !important;
+    gap: 5px !important;
+    align-items: center !important;
+  }
+
+  .user-info {
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .header-actions {
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-left: 0 !important;
+  }
+
+  .btn-group {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .results-container {
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  table {
+    width: 100% !important;
+    min-width: unset !important;
+    overflow-x: auto !important;
+  }
+
+  th, td {
+    font-size: 0.95rem !important;
+    text-align: left !important;
+    padding: 12px !important;
+  }
+
+  .tab {
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .modern-login-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+/* ✅ Final Mobile Layout Fix for All Screens */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 10px;
+  }
+
+  .header-content {
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .app-title {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px;
+  }
+
+  .user-info {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .header-actions {
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100%;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .container {
+    padding: 0 10px !important;
+  }
+
+  .btn-group,
+  .form-row,
+  .tabs {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px;
+  }
+
+  .btn,
+  select,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"] {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  .results-container {
+    overflow-x: auto !important;
+    padding: 0 0 10px 0 !important;
+  }
+
+  table {
+    width: 100% !important;
+    min-width: unset !important;
+    display: block;
+  }
+
+  th, td {
+    padding: 10px 12px !important;
+    font-size: 0.95rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .admin-user-item {
+    flex-direction: column !important;
+    align-items: flex-start;
+  }
+
+  .admin-user-actions {
+    width: 100% !important;
+    justify-content: flex-end;
+  }
+
+  .modal-content {
+    width: 95% !important;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .modern-login-btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.4rem !important;
+  }
+
+  .card-title {
+    font-size: 1.2rem !important;
+  }
+
+  #header-logo {
+    width: 38px !important;
+  }
+
+  .btn {
+    font-size: 0.95rem !important;
+    padding: 10px 14px !important;
+  }
+}
+        /* 🎯 Smaller Logout & Back Buttons on Mobile */
+@media (max-width: 768px) {
+  .btn#logout-btn,
+  .btn#attendance-logout-btn,
+  .btn#admin-logout-btn,
+  .btn#back-btn,
+  .btn#admin-back-btn {
+    font-size: 0.85rem !important;
+    padding: 8px 14px !important;
+    min-width: auto !important;
+    border-radius: 8px !important;
+  }
+
+  .btn#logout-btn i,
+  .btn#attendance-logout-btn i,
+  .btn#admin-logout-btn i,
+  .btn#back-btn i,
+  .btn#admin-back-btn i {
+    font-size: 0.9rem !important;
+  }
+}
+
+
+</style>
 </head>
 <body>
     <div id="splash-screen">
