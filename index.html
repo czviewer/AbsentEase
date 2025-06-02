@@ -213,7 +213,7 @@
             background: var(--gradient-success);
             color: white;
         }
-        
+
         .btn-success:hover {
             background: linear-gradient(135deg, #3ab7d8 0%, #2a9cc4 100%);
         }
@@ -662,31 +662,18 @@
             
             .header {
                 flex-wrap: wrap;
-                flex-direction: column; /* Stack header content vertically */
-                align-items: flex-start; /* Align items to the start */
             }
             
             .header-actions {
                 margin-left: 0;
-                margin-top: 15px; /* Add some space from stacked content */
+                margin-top: 10px;
                 width: 100%;
-                justify-content: center; /* Center buttons horizontally */
-                flex-wrap: wrap; /* Allow buttons to wrap */
-                gap: 10px; /* Reduce gap between buttons for smaller screens */
-            }
-
-            .header-actions .btn {
-                flex-grow: 1; /* Allow buttons to grow and take available space */
-                min-width: unset; /* Remove min-width constraint */
+                justify-content: flex-end;
             }
 
             .form-row {
                 flex-direction: column;
                 gap: 15px;
-            }
-
-            table {
-                font-size: 0.9em; /* Slightly reduce font size for tables */
             }
         }
 
@@ -698,7 +685,7 @@
             .btn {
                 padding: 10px 15px;
                 font-size: 0.9rem;
-                min-width: unset; /* Ensure min-width is unset for very small screens */
+                min-width: 80px;
             }
             
             #header-logo {
@@ -714,18 +701,6 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 5px;
-            }
-
-            .container {
-                padding: 0 15px; /* Reduce padding for very small screens */
-            }
-
-            .control-panel, .card, .results-container {
-                padding: 20px; /* Reduce padding for smaller panels */
-            }
-
-            .modal-content {
-                padding: 20px; /* Adjust modal padding */
             }
         }
 
@@ -913,6 +888,7 @@
                 <div class="tab" data-tab="individual">Individual Attendance</div>
             </div>
 
+            <!-- Class Attendance Tab -->
             <div class="tab-content active" id="class-tab">
                 <div class="control-panel">
                     <div id="attendance-error" class="error-message"></div>
@@ -978,6 +954,7 @@
                 </div>
             </div>
 
+            <!-- Individual Attendance Tab -->
             <div class="tab-content" id="individual-tab">
                 <div class="control-panel">
                     <div id="individual-error" class="error-message"></div>
@@ -1027,6 +1004,7 @@
         </div>
     </div>
 
+    <!-- Admin Panel -->
     <div id="admin-panel">
         <div class="container">
             <header>
@@ -1055,26 +1033,32 @@
                 <div class="tab" data-tab="settings">System Settings</div>
             </div>
 
+            <!-- User Management Tab -->
             <div class="tab-content active" id="users-tab">
                 <div class="card">
                     <h2 class="card-title"><i class="fas fa-user-plus"></i> Add New User</h2>
+                    
                     <div id="admin-error" class="error-message"></div>
                     <div id="admin-success" class="success-message"></div>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label for="new-user-email"><i class="fas fa-envelope"></i> Email Address</label>
                             <input type="email" id="new-user-email" placeholder="Enter user email">
                         </div>
+                        
                         <div class="form-group">
                             <label for="new-user-password"><i class="fas fa-lock"></i> Password</label>
                             <input type="password" id="new-user-password" placeholder="Set a password">
                         </div>
                     </div>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label for="new-user-name"><i class="fas fa-user"></i> Full Name</label>
                             <input type="text" id="new-user-name" placeholder="Enter full name">
                         </div>
+                        
                         <div class="form-group">
                             <label><i class="fas fa-user-tag"></i> User Role</label>
                             <div class="user-role-select">
@@ -1085,6 +1069,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Class assignment for teachers -->
                     <div class="form-group class-assign-group" id="class-assign-group">
                         <label for="new-user-class"><i class="fas fa-users"></i> Assign Class</label>
                         <select id="new-user-class">
@@ -1098,32 +1084,39 @@
                             <option value="D2">Class D2</option>
                         </select>
                     </div>
+                    
                     <div class="btn-group">
                         <button id="add-user-btn" class="btn btn-success">
                             <i class="fas fa-plus"></i> Add User
                         </button>
                     </div>
                 </div>
-
+                
                 <div class="card">
                     <h2 class="card-title"><i class="fas fa-users"></i> Manage Users</h2>
+                    
                     <div class="admin-user-list" id="user-list">
-                        </div>
+                        <!-- Users will be loaded here -->
+                    </div>
                 </div>
             </div>
 
+            <!-- System Settings Tab -->
             <div class="tab-content" id="settings-tab">
                 <div class="card">
                     <h2 class="card-title"><i class="fas fa-cog"></i> System Configuration</h2>
                     <p>Configure system-wide settings and preferences.</p>
+                    
                     <div class="form-group">
                         <label for="system-name"><i class="fas fa-school"></i> School Name</label>
                         <input type="text" id="system-name" placeholder="Enter school name" value="AbsentEase Academy">
                     </div>
+                    
                     <div class="form-group">
                         <label for="logo-url"><i class="fas fa-image"></i> Logo URL</label>
                         <input type="text" id="logo-url" placeholder="Enter logo URL" value="https://cdn.imgchest.com/files/yvdcwpogmwy.png">
                     </div>
+                    
                     <div class="form-group">
                         <label><i class="fas fa-bell"></i> Notification Settings</label>
                         <div style="display: flex; gap: 15px; margin-top: 10px;">
@@ -1135,15 +1128,17 @@
                             </label>
                         </div>
                     </div>
+                    
                     <div class="btn-group">
                         <button id="save-settings-btn" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Settings
                         </button>
                     </div>
                 </div>
-
+                
                 <div class="card">
                     <h2 class="card-title"><i class="fas fa-shield-alt"></i> Security</h2>
+                    
                     <div class="form-group">
                         <label for="password-policy"><i class="fas fa-lock"></i> Password Policy</label>
                         <select id="password-policy">
@@ -1152,6 +1147,7 @@
                             <option value="high">High (10 characters with letters, numbers and symbols)</option>
                         </select>
                     </div>
+                    
                     <div class="form-group">
                         <label for="session-timeout"><i class="fas fa-clock"></i> Session Timeout</label>
                         <select id="session-timeout">
@@ -1162,6 +1158,7 @@
                             <option value="0">No timeout</option>
                         </select>
                     </div>
+                    
                     <div class="btn-group">
                         <button id="save-security-btn" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Security Settings
@@ -1171,7 +1168,8 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- User Edit Modal -->
     <div id="edit-user-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1180,10 +1178,12 @@
             </div>
             <div id="edit-user-error" class="error-message"></div>
             <div id="edit-user-success" class="success-message"></div>
+            
             <div class="form-group">
                 <label for="edit-user-name"><i class="fas fa-user"></i> Full Name</label>
                 <input type="text" id="edit-user-name" placeholder="Enter full name">
             </div>
+            
             <div class="form-group">
                 <label for="edit-user-role"><i class="fas fa-user-tag"></i> User Role</label>
                 <select id="edit-user-role">
@@ -1193,6 +1193,7 @@
                     <option value="administrator">Administrator</option>
                 </select>
             </div>
+            
             <div class="form-group" id="edit-class-assign-group">
                 <label for="edit-user-class"><i class="fas fa-users"></i> Assign Class</label>
                 <select id="edit-user-class">
@@ -1206,6 +1207,7 @@
                     <option value="D2">Class D2</option>
                 </select>
             </div>
+            
             <div class="modal-buttons">
                 <button id="save-user-btn" class="btn btn-primary">Save Changes</button>
                 <button id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
@@ -1216,6 +1218,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBBSXXDKjH2kk7c8oaMPEZLDPrbi9L4is4",
@@ -1231,7 +1234,7 @@
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const auth = firebase.auth();
-
+        
         // Current user data
         let currentUser = null;
         let userRole = 'teacher';
@@ -1248,12 +1251,11 @@
             const adminPanel = document.getElementById("admin-panel");
             const messageEl = document.getElementById("message");
             const editUserModal = document.getElementById("edit-user-modal");
-
+            
             const loginBtn = document.getElementById("login-btn");
             const emailInput = document.getElementById("email-input");
             const passwordInput = document.getElementById("password-input");
             const loginError = document.getElementById("login-error");
-
             const logoutBtn = document.getElementById("logout-btn");
             const attendanceBtn = document.getElementById("attendance-btn");
             const backBtn = document.getElementById("back-btn");
@@ -1296,7 +1298,6 @@
             const editUserError = document.getElementById("edit-user-error");
             const editUserSuccess = document.getElementById("edit-user-success");
 
-
             // Variables for user management
             let usersRef = database.ref('users');
             let currentEditUser = null;
@@ -1304,337 +1305,32 @@
             // Tabs for attendance screen
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
-
+            
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     // Remove active class from all tabs and contents
                     tabs.forEach(t => t.classList.remove('active'));
                     tabContents.forEach(c => c.classList.remove('active'));
-
+                    
                     // Add active class to clicked tab
                     tab.classList.add('active');
-
-                    // Show
-                    const targetTabContent = document.getElementById(tab.dataset.tab + '-tab');
-                    if (targetTabContent) {
-                        targetTabContent.classList.add('active');
-                    }
+                    
+                    // Show corresponding content
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
                 });
             });
 
-            // Show splash screen
-            messageEl.textContent = welcomeMessage;
-            splashScreen.style.display = "flex";
-
-            setTimeout(() => {
-                splashScreen.classList.add("fade-out");
-                setTimeout(() => {
-                    splashScreen.style.display = "none";
-                    loginScreen.style.display = "block";
-                }, 500); // Wait for fade-out transition to complete
-            }, 3000); // Display splash screen for 3 seconds
-
-            // Handle login
-            loginBtn.addEventListener("click", async function () {
-                const email = emailInput.value;
-                const password = passwordInput.value;
-
-                loginError.style.display = 'none';
-
-                try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    currentUser = userCredential.user;
-
-                    // Fetch user role and name from database
-                    const userRef = database.ref('users/' + currentUser.uid);
-                    userRef.once('value', (snapshot) => {
-                        const userData = snapshot.val();
-                        if (userData) {
-                            userRole = userData.role;
-                            userDisplayName = userData.name;
-                            userAssignedClass = userData.assignedClass || null; // For teachers
-
-                            document.getElementById("user-display-name").textContent = userDisplayName;
-                            document.getElementById("attendance-user-name").textContent = userDisplayName;
-                            document.getElementById("admin-user-name").textContent = userDisplayName;
-
-                            const userRoleBadge = document.getElementById("user-role-badge");
-                            const attendanceRoleBadge = document.getElementById("attendance-role-badge");
-                            const adminRoleBadge = document.getElementById("admin-role-badge");
-
-                            userRoleBadge.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-                            userRoleBadge.className = `role-badge badge-${userRole}`;
-
-                            attendanceRoleBadge.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-                            attendanceRoleBadge.className = `role-badge badge-${userRole}`;
-
-                            adminRoleBadge.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-                            adminRoleBadge.className = `role-badge badge-${userRole}`;
-
-                            // Show/hide admin panel button based on role
-                            if (userRole === 'admin' || userRole === 'principal' || userRole === 'administrator') {
-                                adminPanelBtn.style.display = 'inline-flex';
-                                adminPanelBtn2.style.display = 'inline-flex';
-                            } else {
-                                adminPanelBtn.style.display = 'none';
-                                adminPanelBtn2.style.display = 'none';
-                            }
-
-                            // If teacher, populate class selector with assigned class only
-                            const classSelector = document.getElementById("class-selector");
-                            const attendanceClassSelector = document.getElementById("attendance-class-selector");
-                            const studentClassSelector = document.getElementById("student-class-selector");
-                            const newUserClassSelector = document.getElementById("new-user-class");
-                            const editUserClassSelector = document.getElementById("edit-user-class");
-
-                            // Clear existing options
-                            classSelector.innerHTML = '';
-                            attendanceClassSelector.innerHTML = '';
-                            studentClassSelector.innerHTML = '';
-                            newUserClassSelector.innerHTML = '';
-                            editUserClassSelector.innerHTML = '';
-
-                            if (userRole === 'teacher' && userAssignedClass) {
-                                let option = document.createElement('option');
-                                option.value = userAssignedClass;
-                                option.textContent = `Class ${userAssignedClass}`;
-                                classSelector.appendChild(option);
-
-                                let attOption = document.createElement('option');
-                                attOption.value = userAssignedClass;
-                                attOption.textContent = `Class ${userAssignedClass}`;
-                                attendanceClassSelector.appendChild(attOption);
-
-                                let studentAttOption = document.createElement('option');
-                                studentAttOption.value = userAssignedClass;
-                                studentAttOption.textContent = `Class ${userAssignedClass}`;
-                                studentClassSelector.appendChild(studentAttOption);
-
-                            } else {
-                                // For other roles, populate all classes
-                                allClasses.forEach(cls => {
-                                    let option = document.createElement('option');
-                                    option.value = cls;
-                                    option.textContent = `Class ${cls}`;
-                                    classSelector.appendChild(option);
-
-                                    let attOption = document.createElement('option');
-                                    attOption.value = cls;
-                                    attOption.textContent = `Class ${cls}`;
-                                    attendanceClassSelector.appendChild(attOption);
-
-                                    let studentAttOption = document.createElement('option');
-                                    studentAttOption.value = cls;
-                                    studentAttOption.textContent = `Class ${cls}`;
-                                    studentClassSelector.appendChild(studentAttOption);
-                                });
-                            }
-
-                            // Populate newUserClass and editUserClass with all classes for admin
-                            allClasses.forEach(cls => {
-                                let newUserClassOption = document.createElement('option');
-                                newUserClassOption.value = cls;
-                                newUserClassOption.textContent = `Class ${cls}`;
-                                newUserClassSelector.appendChild(newUserClassOption);
-
-                                let editUserClassOption = document.createElement('option');
-                                editUserClassOption.value = cls;
-                                editUserClassOption.textContent = `Class ${cls}`;
-                                editUserClassSelector.appendChild(editUserClassOption);
-                            });
-
-                            loginScreen.style.display = "none";
-                            mainScreen.style.display = "block";
-                        } else {
-                            loginError.textContent = "User data not found in database. Please contact support.";
-                            loginError.style.display = 'block';
-                            auth.signOut(); // Log out user if data is missing
-                        }
-                    });
-
-                } catch (error) {
-                    loginError.textContent = `Login failed: ${error.message}`;
-                    loginError.style.display = 'block';
-                }
-            });
-
-            // Handle logout
-            logoutBtn.addEventListener("click", async function () {
-                try {
-                    await auth.signOut();
-                    currentUser = null;
-                    mainScreen.style.display = "none";
-                    attendanceScreen.style.display = "none";
-                    adminPanel.style.display = "none";
-                    loginScreen.style.display = "block";
-                    emailInput.value = '';
-                    passwordInput.value = '';
-                    loginError.style.display = 'none';
-                    errorMessage.style.display = 'none';
-                    successMessage.style.display = 'none';
-                    adminError.style.display = 'none';
-                    adminSuccess.style.display = 'none';
-                    usersLoaded = false; // Reset user loaded state on logout
-                } catch (error) {
-                    console.error("Logout error:", error);
-                }
-            });
-
-            attendanceLogoutBtn.addEventListener("click", async function () {
-                logoutBtn.click();
-            });
-
-            adminLogoutBtn.addEventListener("click", async function () {
-                logoutBtn.click();
-            });
-
-            // Switch to attendance screen
-            attendanceBtn.addEventListener("click", function () {
-                mainScreen.style.display = "none";
-                attendanceScreen.style.display = "block";
-            });
-
-            // Back from attendance screen
-            backBtn.addEventListener("click", function () {
-                attendanceScreen.style.display = "none";
-                mainScreen.style.display = "block";
-            });
-
-            // Switch to admin panel
-            adminPanelBtn.addEventListener("click", function () {
-                mainScreen.style.display = "none";
-                adminPanel.style.display = "block";
-                if (!usersLoaded) {
-                    loadUsers(); // Load users only once when entering admin panel
-                    usersLoaded = true;
-                }
-            });
-
-            adminPanelBtn2.addEventListener("click", function () {
-                attendanceScreen.style.display = "none";
-                adminPanel.style.display = "block";
-                if (!usersLoaded) {
-                    loadUsers(); // Load users only once when entering admin panel
-                    usersLoaded = true;
-                }
-            });
-
-            // Back from admin panel
-            adminBackBtn.addEventListener("click", function () {
-                adminPanel.style.display = "none";
-                mainScreen.style.display = "block";
-            });
-
-            // Main screen functionality
-            searchBtn.addEventListener("click", async function () {
-                const selectedClass = document.getElementById("class-selector").value;
-                const rollNumbers = rollInput.value.split(',').map(roll => roll.trim()).filter(roll => roll !== '');
-
-                errorMessage.style.display = 'none';
-                successMessage.style.display = 'none';
-                resultsTableBody.innerHTML = ''; // Clear previous results
-
-                if (!selectedClass) {
-                    errorMessage.textContent = "Please select a class.";
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                if (rollNumbers.length === 0) {
-                    errorMessage.textContent = "Please enter roll numbers or click 'View All'.";
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                try {
-                    const studentsRef = database.ref(`classes/${selectedClass}/students`);
-                    const snapshot = await studentsRef.once('value');
-                    const studentsData = snapshot.val();
-
-                    if (!studentsData) {
-                        errorMessage.textContent = `No students found for Class ${selectedClass}.`;
-                        errorMessage.style.display = 'block';
-                        return;
-                    }
-
-                    let foundStudents = 0;
-                    rollNumbers.forEach(roll => {
-                        const student = studentsData[roll];
-                        if (student) {
-                            const row = resultsTableBody.insertRow();
-                            row.insertCell(0).textContent = roll;
-                            row.insertCell(1).textContent = student.name;
-                            foundStudents++;
-                        }
-                    });
-
-                    if (foundStudents === 0) {
-                        errorMessage.textContent = "No matching students found for the entered roll numbers.";
-                        errorMessage.style.display = 'block';
-                    } else {
-                        successMessage.textContent = `${foundStudents} student(s) found.`;
-                        successMessage.style.display = 'block';
-                    }
-
-                } catch (error) {
-                    errorMessage.textContent = `Error searching students: ${error.message}`;
-                    errorMessage.style.display = 'block';
-                }
-            });
-
-            viewAllBtn.addEventListener("click", async function () {
-                const selectedClass = document.getElementById("class-selector").value;
-
-                errorMessage.style.display = 'none';
-                successMessage.style.display = 'none';
-                resultsTableBody.innerHTML = ''; // Clear previous results
-
-                if (!selectedClass) {
-                    errorMessage.textContent = "Please select a class.";
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                try {
-                    const studentsRef = database.ref(`classes/${selectedClass}/students`);
-                    const snapshot = await studentsRef.once('value');
-                    const studentsData = snapshot.val();
-
-                    if (!studentsData) {
-                        errorMessage.textContent = `No students found for Class ${selectedClass}.`;
-                        errorMessage.style.display = 'block';
-                        return;
-                    }
-
-                    let studentCount = 0;
-                    Object.keys(studentsData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(roll => {
-                        const student = studentsData[roll];
-                        const row = resultsTableBody.insertRow();
-                        row.insertCell(0).textContent = roll;
-                        row.insertCell(1).textContent = student.name;
-                        studentCount++;
-                    });
-
-                    successMessage.textContent = `${studentCount} student(s) loaded.`;
-                    successMessage.style.display = 'block';
-
-                } catch (error) {
-                    errorMessage.textContent = `Error loading students: ${error.message}`;
-                    errorMessage.style.display = 'block';
-                }
-            });
-
-            // Share Button (Placeholder - functionality to be implemented)
-            shareBtn.addEventListener("click", function () {
-                alert("Share functionality is not yet implemented.");
-            });
-
-            // Admin panel functionality
+            // Role selection in admin panel
+            let selectedRole = 'teacher';
             roleOptions.forEach(option => {
-                option.addEventListener("click", function () {
-                    roleOptions.forEach(opt => opt.classList.remove("selected"));
-                    this.classList.add("selected");
-                    if (this.dataset.role === 'teacher') {
+                option.addEventListener('click', () => {
+                    roleOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedRole = option.getAttribute('data-role');
+                    
+                    // Show/hide class assignment for teachers
+                    if (selectedRole === 'teacher') {
                         classAssignGroup.style.display = 'block';
                     } else {
                         classAssignGroup.style.display = 'none';
@@ -1642,193 +1338,795 @@
                 });
             });
 
-            addUserBtn.addEventListener("click", async function () {
-                const email = newUserEmail.value;
-                const password = newUserPassword.value;
-                const name = newUserName.value;
-                const selectedRoleElement = document.querySelector(".role-option.selected");
-                const role = selectedRoleElement ? selectedRoleElement.dataset.role : null;
-                const assignedClass = (role === 'teacher' && classAssignGroup.style.display === 'block') ? newUserClass.value : null;
+            // Set default role selection
+            document.querySelector('.role-option[data-role="teacher"]').classList.add('selected');
 
-                adminError.style.display = 'none';
-                adminSuccess.style.display = 'none';
-
-                if (!email || !password || !name || !role) {
-                    adminError.textContent = "All fields are required.";
-                    adminError.style.display = 'block';
-                    return;
-                }
-
-                if (role === 'teacher' && !assignedClass) {
-                    adminError.textContent = "Please assign a class for the teacher.";
-                    adminError.style.display = 'block';
-                    return;
-                }
-
-                try {
-                    // In a real application, user creation should be handled on a secure backend
-                    // For this demo, we'll simulate adding to a 'users' node in Realtime Database
-                    // and store relevant user info there. Firebase Auth user creation is different.
-
-                    // Simulate Firebase Auth user creation (client-side Firebase Auth doesn't allow direct password setting for new users like this for security reasons in a real app)
-                    // For a real app, use Firebase Admin SDK on a backend server to create users with passwords.
-                    // Here, we'll just push to database as a demonstration of database interaction.
-                    const newUserRef = usersRef.push(); // Generates a unique ID
-                    const newUserId = newUserRef.key;
-
-                    await newUserRef.set({
-                        email: email,
-                        name: name,
-                        role: role,
-                        assignedClass: assignedClass
-                    });
-
-                    adminSuccess.textContent = `User ${name} added successfully!`;
-                    adminSuccess.style.display = 'block';
-
-                    // Clear form
-                    newUserEmail.value = '';
-                    newUserPassword.value = '';
-                    newUserName.value = '';
-                    roleOptions.forEach(opt => opt.classList.remove("selected"));
-                    classAssignGroup.style.display = 'none';
-
-                    loadUsers(); // Refresh user list
-                    setTimeout(() => {
-                        adminSuccess.style.display = 'none';
-                    }, 3000);
-
-                } catch (error) {
-                    adminError.textContent = `Error adding user: ${error.message}`;
-                    adminError.style.display = 'block';
-                }
-            });
-
-            async function loadUsers() {
-                adminError.style.display = 'none';
-                userList.innerHTML = '<p style="text-align: center; color: #6c757d;">Loading users...</p>';
-                try {
-                    const snapshot = await usersRef.once('value');
-                    const usersData = snapshot.val();
-                    userList.innerHTML = ''; // Clear loading message
-
-                    if (usersData) {
-                        Object.keys(usersData).forEach(uid => {
-                            const user = usersData[uid];
-                            const userItem = document.createElement('div');
-                            userItem.classList.add('admin-user-item');
-                            userItem.innerHTML = `
-                                <div class="admin-user-info">
-                                    <div class="admin-user-email">${user.email}</div>
-                                    <div class="admin-user-role">${user.name} - ${user.role.charAt(0).toUpperCase() + user.role.slice(1)} ${user.assignedClass ? `(Class ${user.assignedClass})` : ''}</div>
-                                </div>
-                                <div class="admin-user-actions">
-                                    <button class="btn btn-primary edit-user-btn" data-uid="${uid}" data-email="${user.email}" data-name="${user.name}" data-role="${user.role}" data-class="${user.assignedClass || ''}">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-danger delete-user-btn" data-uid="${uid}" data-email="${user.email}">
-                                        <i class="fas fa-trash-alt"></i> Delete
-                                    </button>
-                                </div>
-                            `;
-                            userList.appendChild(userItem);
-                        });
-
-                        // Add event listeners to newly created buttons
-                        document.querySelectorAll('.edit-user-btn').forEach(button => {
-                            button.addEventListener('click', function () {
-                                const uid = this.dataset.uid;
-                                const email = this.dataset.email;
-                                const name = this.dataset.name;
-                                const role = this.dataset.role;
-                                const assignedClass = this.dataset.class;
-                                openEditModal(uid, email, name, role, assignedClass);
-                            });
-                        });
-
-                        document.querySelectorAll('.delete-user-btn').forEach(button => {
-                            button.addEventListener('click', function () {
-                                const uid = this.dataset.uid;
-                                const email = this.dataset.email;
-                                deleteUser(uid, email);
-                            });
-                        });
-
-                    } else {
-                        userList.innerHTML = '<p style="text-align: center; color: #6c757d;">No users found.</p>';
-                    }
-
-                } catch (error) {
-                    adminError.textContent = `Error loading users: ${error.message}`;
-                    adminError.style.display = 'block';
-                }
-            }
-
-            function openEditModal(uid, email, name, role, assignedClass) {
-                currentEditUser = { uid, email, name, role, assignedClass };
-                editUserName.value = name;
-                editUserRole.value = role;
-
-                if (role === 'teacher') {
+            // Edit modal role change listener
+            editUserRole.addEventListener('change', function() {
+                if (this.value === 'teacher') {
                     editClassAssignGroup.style.display = 'block';
-                    editUserClass.value = assignedClass;
                 } else {
                     editClassAssignGroup.style.display = 'none';
                 }
+            });
 
-                editUserError.style.display = 'none';
-                editUserSuccess.style.display = 'none';
-                editUserModal.style.display = 'flex';
-            }
-
+            // Modal close handlers
             closeModalBtn.addEventListener('click', () => {
                 editUserModal.style.display = 'none';
-                currentEditUser = null;
             });
-
+            
             cancelEditBtn.addEventListener('click', () => {
                 editUserModal.style.display = 'none';
-                currentEditUser = null;
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === editUserModal) {
+                    editUserModal.style.display = 'none';
+                }
             });
 
-            saveUserBtn.addEventListener('click', async () => {
-                if (!currentEditUser) return;
+            async function handleSplashScreen() {
+                await typeMessage(welcomeMessage);
+                splashScreen.classList.add("fade-out");
+                setTimeout(() => {
+                    splashScreen.style.display = "none";
+                }, 500);
+            }
 
-                const updatedName = editUserName.value;
-                const updatedRole = editUserRole.value;
-                const updatedAssignedClass = (updatedRole === 'teacher') ? editUserClass.value : null;
+            function typeMessage(msg) {
+                return new Promise(resolve => {
+                    let index = 0;
+                    function type() {
+                        if (index < msg.length) {
+                            messageEl.innerHTML += msg[index] === '\n' ? '<br>' : msg[index];
+                            index++;
+                            setTimeout(type, 50);
+                        } else {
+                            setTimeout(resolve, 1500);
+                        }
+                    }
+                    type();
+                });
+            }
 
-                editUserError.style.display = 'none';
-                editUserSuccess.style.display = 'none';
+            // Update UI with user role and display name
+            function updateUserUI() {
+                // Update role badges
+                const roleBadge = document.getElementById('user-role-badge');
+                const attendanceRoleBadge = document.getElementById('attendance-role-badge');
+                const adminRoleBadge = document.getElementById('admin-role-badge');
+                
+                // Reset classes
+                roleBadge.className = 'role-badge';
+                attendanceRoleBadge.className = 'role-badge';
+                adminRoleBadge.className = 'role-badge';
+                
+                switch(userRole) {
+                    case 'administrator':
+                        roleBadge.classList.add('badge-administrator');
+                        attendanceRoleBadge.classList.add('badge-administrator');
+                        adminRoleBadge.classList.add('badge-administrator');
+                        roleBadge.textContent = 'Administrator';
+                        attendanceRoleBadge.textContent = 'Administrator';
+                        adminRoleBadge.textContent = 'Administrator';
+                        break;
+                    case 'admin':
+                        roleBadge.classList.add('badge-admin');
+                        attendanceRoleBadge.classList.add('badge-admin');
+                        adminRoleBadge.classList.add('badge-admin');
+                        roleBadge.textContent = 'Admin';
+                        attendanceRoleBadge.textContent = 'Admin';
+                        adminRoleBadge.textContent = 'Admin';
+                        break;
+                    case 'principal':
+                        roleBadge.classList.add('badge-principal');
+                        attendanceRoleBadge.classList.add('badge-principal');
+                        adminRoleBadge.classList.add('badge-principal');
+                        roleBadge.textContent = 'Principal';
+                        attendanceRoleBadge.textContent = 'Principal';
+                        adminRoleBadge.textContent = 'Principal';
+                        break;
+                    case 'teacher':
+                        roleBadge.classList.add('badge-teacher');
+                        attendanceRoleBadge.classList.add('badge-teacher');
+                        adminRoleBadge.classList.add('badge-teacher');
+                        roleBadge.textContent = 'Teacher';
+                        attendanceRoleBadge.textContent = 'Teacher';
+                        adminRoleBadge.textContent = 'Teacher';
+                        break;
+                }
+                
+                // Update display name
+                document.getElementById('user-display-name').textContent = userDisplayName;
+                document.getElementById('attendance-user-name').textContent = userDisplayName;
+                document.getElementById('admin-user-name').textContent = userDisplayName;
+                
+                // Show/hide admin panel button based on role
+                if (userRole === 'administrator') {
+    adminPanelBtn.style.display = 'inline-block';
+    adminPanelBtn2.style.display = 'inline-block';
+} else {
+    adminPanelBtn.style.display = 'none';
+    adminPanelBtn2.style.display = 'none';
+}
 
-                if (!updatedName || !updatedRole) {
-                    editUserError.textContent = "Name and Role are required.";
-                    editUserError.style.display = 'block';
+                
+                // Update class selector based on role
+                updateClassSelector();
+            }
+            
+            // Update class selector based on user role
+function updateClassSelector() {
+    const classSelector = document.getElementById('class-selector'); // For sharing
+    const attendanceClassSelector = document.getElementById('attendance-class-selector'); // Attendance records
+    const studentClassSelector = document.getElementById('student-class-selector'); // Individual student records
+    
+    // Clear existing options
+    classSelector.innerHTML = '';
+    attendanceClassSelector.innerHTML = '';
+    studentClassSelector.innerHTML = '';
+    
+    // 1. SHARING SECTION (main screen) - NO RESTRICTIONS
+    allClasses.forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls;
+        option.textContent = `Class ${cls}`;
+        classSelector.appendChild(option.cloneNode(true));
+    });
+    
+    // 2. ATTENDANCE SECTION - ROLE-BASED RESTRICTIONS
+    if (userRole === 'teacher' && userAssignedClass) {
+        // Teachers only see their assigned class
+        const option = document.createElement('option');
+        option.value = userAssignedClass;
+        option.textContent = `Class ${userAssignedClass}`;
+        attendanceClassSelector.appendChild(option.cloneNode(true));
+        studentClassSelector.appendChild(option.cloneNode(true));
+    } else if (userRole === 'administrator' || userRole === 'admin' || userRole === 'principal') {
+        // Admins/principals see all classes
+        allClasses.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls;
+            option.textContent = `Class ${cls}`;
+            attendanceClassSelector.appendChild(option.cloneNode(true));
+            studentClassSelector.appendChild(option.cloneNode(true));
+        });
+    }
+}
+
+            auth.onAuthStateChanged(async (user) => {
+                await handleSplashScreen();
+                if (user) {
+                    currentUser = user;
+                    const email = user.email;
+                    
+                    // Check if user exists in the users node
+                    const userRef = database.ref(`users/${user.uid}`);
+                    const snapshot = await userRef.once('value');
+                    
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        userRole = userData.role;
+                        userDisplayName = userData.name || email.split('@')[0];
+                        userAssignedClass = userData.class || null;
+                        
+                        loginScreen.style.display = "none";
+                        
+                        // Redirect to appropriate screen
+                        if (window.location.hash === '#admin') {
+                            adminPanel.style.display = "block";
+                        } else if (window.location.hash === '#attendance') {
+                            attendanceScreen.style.display = "block";
+                        } else {
+                            mainScreen.style.display = "block";
+                        }
+                        
+                        // Update UI with user info
+                        updateUserUI();
+                        
+                        // Load users if admin
+                        if (userRole === 'administrator' && !usersLoaded) {  
+                            loadUsers();
+                            usersLoaded = true;
+                        }
+                    }
+                } else {
+                    mainScreen.style.display = "none";
+                    attendanceScreen.style.display = "none";
+                    adminPanel.style.display = "none";
+                    loginScreen.style.display = "block";
+                    usersLoaded = false; // Reset users loaded flag
+                }
+            });
+
+            loginBtn.addEventListener("click", () => {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+
+                if (!email || !password) {
+                    loginError.innerHTML = "Please fill in both fields.";
+                    loginError.style.display = "block";
                     return;
                 }
-                if (updatedRole === 'teacher' && !updatedAssignedClass) {
-                    editUserError.textContent = "Please assign a class for the teacher.";
-                    editUserError.style.display = 'block';
+
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        loginError.style.display = "none";
+                    })
+                    .catch(error => {
+                        loginError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+                        loginError.style.display = "block";
+                    });
+            });
+
+            logoutBtn.addEventListener("click", () => {
+                auth.signOut();
+            });
+            
+            attendanceLogoutBtn.addEventListener("click", () => {
+                auth.signOut();
+            });
+            
+            adminLogoutBtn.addEventListener("click", () => {
+                auth.signOut();
+            });
+            
+            attendanceBtn.addEventListener("click", () => {
+                mainScreen.style.display = "none";
+                attendanceScreen.style.display = "block";
+                window.location.hash = '#attendance';
+            });
+            
+            backBtn.addEventListener("click", () => {
+                attendanceScreen.style.display = "none";
+                mainScreen.style.display = "block";
+                window.location.hash = '';
+            });
+            
+            adminBackBtn.addEventListener("click", () => {
+                adminPanel.style.display = "none";
+                mainScreen.style.display = "block";
+                window.location.hash = '';
+            });
+            
+            adminPanelBtn.addEventListener("click", () => {
+                mainScreen.style.display = "none";
+                adminPanel.style.display = "block";
+                window.location.hash = '#admin';
+                if (userRole === 'administrator' && !usersLoaded) {
+                    loadUsers();
+                    usersLoaded = true;
+                }
+            });
+            
+            adminPanelBtn2.addEventListener("click", () => {
+                attendanceScreen.style.display = "none";
+                adminPanel.style.display = "block";
+                window.location.hash = '#admin';
+                if (userRole === 'administrator' && !usersLoaded) {
+                    loadUsers();
+                    usersLoaded = true;
+                }
+            });
+
+            let studentsRef;
+
+            document.getElementById('class-selector').addEventListener('change', () => {
+                const selectedClass = document.getElementById('class-selector').value;
+                studentsRef = database.ref(`classes/${selectedClass}`);
+            });
+
+            searchBtn.addEventListener('click', async () => {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+
+                const rollInputVal = rollInput.value.trim();
+                // Convert to numbers, filter out non-numbers, then remove duplicates
+                const rollNumbers = [...new Set(
+                    rollInputVal.split(/[,\s]+/)
+                        .map(num => parseInt(num))
+                        .filter(n => !isNaN(n))
+                )];
+
+                if (!rollNumbers.length) {
+                    errorMessage.textContent = "Please enter valid roll numbers";
+                    errorMessage.style.display = 'block';
                     return;
                 }
 
                 try {
-                    await usersRef.child(currentEditUser.uid).update({
-                        name: updatedName,
-                        role: updatedRole,
-                        assignedClass: updatedAssignedClass
-                    });
+                    const snapshot = await studentsRef.once('value');
+                    const studentArray = snapshot.val() || [];
 
-                    editUserSuccess.textContent = `User ${currentEditUser.email} updated successfully!`;
+                    // Create array of {roll, name} objects
+                    const results = rollNumbers
+                        .map(roll => ({
+                            roll,
+                            name: studentArray[roll],
+                            isValid: studentArray[roll] && studentArray[roll] !== "Coming Soon" && studentArray[roll] !== "\"Coming Soon\""
+                        }))
+                        // Sort by roll number
+                        .sort((a, b) => a.roll - b.roll)
+                        // Convert to HTML rows
+                        .map(item => 
+                            item.isValid ?
+                                `<tr><td>${item.roll}</td><td>${item.name}</td></tr>` :
+                                `<tr class="error-row"><td>${item.roll}</td><td>Not Found</td></tr>`
+                        );
+
+                    resultsTableBody.innerHTML = results.join('');
+                    shareBtn.style.display = 'inline-block';
+                } catch (error) {
+                    errorMessage.textContent = `Error fetching data: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                }
+            });
+            
+            viewAllBtn.addEventListener('click', async () => {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                try {
+                    const snapshot = await studentsRef.once('value');
+                    const studentArray = snapshot.val() || [];
+
+                    const results = studentArray
+                        .map((name, index) => {
+                            if (!name || name === "Coming Soon" || name === "\"Coming Soon\"") return null;
+                            return `<tr><td>${index}</td><td>${name}</td></tr>`;
+                        })
+                        .filter(row => row !== null);
+
+                    resultsTableBody.innerHTML = results.join('');
+                    shareBtn.style.display = 'inline-block';
+                    rollInput.value = '';
+                } catch (error) {
+                    errorMessage.textContent = `Error fetching data: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                }
+            });
+
+            shareBtn.addEventListener('click', async () => {
+                // Get current date in DD-MM-YYYY format
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const yyyy = today.getFullYear();
+                const todayFormatted = `${dd}-${mm}-${yyyy}`;
+                
+                // For database storage
+                const todayDB = `${yyyy}-${mm}-${dd}`;
+                
+                // Get all the rows from the table
+                const rows = resultsTableBody.querySelectorAll('tr');
+                
+                if (rows.length === 0) {
+                    errorMessage.textContent = "No absentees to share";
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Get selected class
+                const selectedClass = document.getElementById('class-selector').value;
+                
+                // Collect absentees
+                const absentees = [];
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const roll = cells[0].textContent;
+                    const name = cells[1].textContent;
+                    if (name !== "Not Found") {
+                        absentees.push({ roll, name });
+                    }
+                });
+                
+                // Save to database
+                try {
+                    const attendanceRef = database.ref(`attendance/${todayDB}/${selectedClass}`);
+                    await attendanceRef.set({
+                        date: todayDB,
+                        class: selectedClass,
+                        absentees: absentees
+                    });
+                    
+                    // Show success message
+                    successMessage.textContent = "Attendance saved successfully!";
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 3000);
+                } catch (error) {
+                    errorMessage.textContent = `Error saving attendance: ${error.message}`;
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Format the data for sharing
+                let shareText = `Today's Absentees (${todayFormatted})\n`;
+                shareText += '------------------------------------------\n';
+                
+                absentees.forEach(item => {
+                    shareText += `${item.name}\n`;
+                });
+
+                // Try Web Share API first (mobile devices)
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Today's Absentees - ${todayFormatted}`,
+                        text: shareText
+                    }).catch(err => {
+                        console.error('Error sharing:', err);
+                        fallbackShare(shareText);
+                    });
+                } else {
+                    fallbackShare(shareText);
+                }
+            });
+            
+            // Fallback for browsers that don't support Web Share API
+            function fallbackShare(text) {
+                // Create a temporary textarea for better copy compatibility
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    if (successful) {
+                        successMessage.textContent = "Absentees list copied to clipboard!";
+                        successMessage.style.display = 'block';
+                        setTimeout(() => {
+                            successMessage.style.display = 'none';
+                        }, 3000);
+                    } else {
+                        throw new Error('Copy failed');
+                    }
+                } catch (err) {
+                    // Final fallback - show the data in an alert
+                    alert('Absentees list:\n\n' + text);
+                }
+            }
+            
+            // Load attendance data
+            document.getElementById('load-attendance-btn').addEventListener('click', async () => {
+                const attendanceError = document.getElementById('attendance-error');
+                const attendanceSuccess = document.getElementById('attendance-success');
+                attendanceError.style.display = 'none';
+                attendanceSuccess.style.display = 'none';
+                
+                const selectedClass = document.getElementById('attendance-class-selector').value;
+                const selectedDate = document.getElementById('date-selector').value;
+                
+                if (!selectedDate) {
+                    attendanceError.textContent = "Please select a date";
+                    attendanceError.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Fetch class data to get total students
+                    const classRef = database.ref(`classes/${selectedClass}`);
+                    const classSnapshot = await classRef.once('value');
+                    const studentArray = classSnapshot.val() || [];
+                    
+                    // Filter out empty and "Coming Soon" entries
+                    const totalStudents = studentArray.filter(name => 
+                        name && name !== "Coming Soon" && name !== "\"Coming Soon\""
+                    ).length;
+                    
+                    document.getElementById('total-students').textContent = totalStudents;
+                    
+                    // Fetch attendance data
+                    const attendanceRef = database.ref(`attendance/${selectedDate}/${selectedClass}`);
+                    const attendanceSnapshot = await attendanceRef.once('value');
+                    const attendanceData = attendanceSnapshot.val();
+                    
+                    let absentCount = 0;
+                    let tableHTML = '';
+                    
+                    if (attendanceData && attendanceData.absentees) {
+                        absentCount = attendanceData.absentees.length;
+                        
+                        // Create a set of absent roll numbers for quick lookup
+                        const absentRolls = new Set(attendanceData.absentees.map(a => a.roll));
+                        
+                        // Create table with all students, marking absent ones
+                        studentArray.forEach((name, index) => {
+                            if (name && name !== "Coming Soon" && name !== "\"Coming Soon\"") {
+                                const isAbsent = absentRolls.has(index.toString());
+                                tableHTML += `
+                                    <tr>
+                                        <td>${index}</td>
+                                        <td>${name}</td>
+                                        <td>${isAbsent ? 
+                                            '<span style="color: var(--danger);"><i class="fas fa-times"></i> <span class="status-indicator status-absent"></span>Absent</span>' : 
+                                            '<span style="color: var(--success);"><i class="fas fa-check"></i> <span class="status-indicator status-present"></span>Present</span>'}</td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                    } else {
+                        // No attendance data for this date, show all as present
+                        studentArray.forEach((name, index) => {
+                            if (name && name !== "Coming Soon" && name !== "\"Coming Soon\"") {
+                                tableHTML += `
+                                    <tr>
+                                        <td>${index}</td>
+                                        <td>${name}</td>
+                                        <td><span style="color: var(--success);"><i class="fas fa-check"></i> <span class="status-indicator status-present"></span>Present</span></td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    document.getElementById('attendance-table-body').innerHTML = tableHTML;
+                    document.getElementById('absent-today').textContent = absentCount;
+                    
+                    // Calculate attendance rate
+                    const attendanceRate = totalStudents > 0 ? 
+                        Math.round(((totalStudents - absentCount) / totalStudents) * 100) : 0;
+                    document.getElementById('attendance-rate').textContent = `${attendanceRate}%`;
+                    
+                } catch (error) {
+                    attendanceError.textContent = `Error loading attendance: ${error.message}`;
+                    attendanceError.style.display = 'block';
+                }
+            });
+            
+            // Load individual student attendance
+            document.getElementById('load-student-btn').addEventListener('click', async () => {
+                const individualError = document.getElementById('individual-error');
+                const individualSuccess = document.getElementById('individual-success');
+                individualError.style.display = 'none';
+                individualSuccess.style.display = 'none';
+                
+                const selectedClass = document.getElementById('student-class-selector').value;
+                const rollNumber = document.getElementById('student-roll-input').value.trim();
+                
+                if (!rollNumber) {
+                    individualError.textContent = "Please enter a roll number";
+                    individualError.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Fetch class data to get student name
+                    const classRef = database.ref(`classes/${selectedClass}`);
+                    const classSnapshot = await classRef.once('value');
+                    const studentArray = classSnapshot.val() || [];
+                    
+                    const studentName = studentArray[rollNumber];
+                    
+                    if (!studentName || studentName === "Coming Soon" || studentName === "\"Coming Soon\"") {
+                        individualError.textContent = "Student not found in this class";
+                        individualError.style.display = 'block';
+                        return;
+                    }
+                    
+                    document.getElementById('student-name').textContent = `${studentName} (Roll: ${rollNumber})`;
+                    
+                    // Fetch all attendance records for this class
+                    const attendanceRef = database.ref(`attendance`);
+                    const attendanceSnapshot = await attendanceRef.once('value');
+                    const allAttendance = attendanceSnapshot.val();
+                    
+                    let tableHTML = '';
+                    let absentCount = 0;
+                    let totalDays = 0;
+                    
+                    if (allAttendance) {
+                        // Iterate through each date
+                        Object.keys(allAttendance).forEach(date => {
+                            const classData = allAttendance[date][selectedClass];
+                            if (classData) {
+                                totalDays++;
+                                const isAbsent = classData.absentees.some(a => a.roll === rollNumber);
+                                
+                                if (isAbsent) absentCount++;
+                                
+                                // Format date to DD-MM-YYYY
+                                const [year, month, day] = date.split('-');
+                                const formattedDate = `${day}-${month}-${year}`;
+                                
+                                tableHTML += `
+                                    <tr>
+                                        <td>${formattedDate}</td>
+                                        <td>${isAbsent ? 
+                                            '<span style="color: var(--danger);"><i class="fas fa-times"></i> <span class="status-indicator status-absent"></span>Absent</span>' : 
+                                            '<span style="color: var(--success);"><i class="fas fa-check"></i> <span class="status-indicator status-present"></span>Present</span>'}</td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    if (tableHTML === '') {
+                        tableHTML = `<tr><td colspan="2" style="text-align: center;">No attendance records found for this student</td></tr>`;
+                    }
+                    
+                    document.getElementById('student-attendance-body').innerHTML = tableHTML;
+                    
+                } catch (error) {
+                    individualError.textContent = `Error loading student records: ${error.message}`;
+                    individualError.style.display = 'block';
+                }
+            });
+
+           // ✅ Add new user without logging out current admin
+addUserBtn.addEventListener('click', async () => {
+    const email = newUserEmail.value.trim();
+    const password = newUserPassword.value;
+    const name = newUserName.value.trim();
+    const classAssignment = selectedRole === 'teacher' ? newUserClass.value : null;
+
+    adminError.style.display = 'none';
+    adminSuccess.style.display = 'none';
+
+    if (!email || !password || !name) {
+        adminError.textContent = "⚠️ Please fill in all fields!";
+        adminError.style.display = 'block';
+        return;
+    }
+
+    if (password.length < 6) {
+        adminError.textContent = "🔐 Password must be at least 6 characters!";
+        adminError.style.display = 'block';
+        return;
+    }
+
+    try {
+        // ✨ Create Secondary App to prevent logout
+        const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+        const secondaryAuth = secondaryApp.auth();
+
+        const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        await database.ref('users/' + user.uid).set({
+            email: email,
+            name: name,
+            role: selectedRole,
+            class: classAssignment
+        });
+
+        // ✅ Optional: Set displayName for new user (not critical)
+        await user.updateProfile({ displayName: name });
+
+        adminSuccess.textContent = `✅ User "${email}" created successfully!`;
+        adminSuccess.style.display = 'block';
+
+        // Clear form inputs
+        newUserEmail.value = '';
+        newUserPassword.value = '';
+        newUserName.value = '';
+        loadUsers(); // 🌀 Refresh
+        // 🔁 Delete secondary app to avoid memory leak
+        await secondaryApp.delete();
+
+    } catch (error) {
+        adminError.textContent = `❌ Error: ${error.message}`;
+        adminError.style.display = 'block';
+    }
+});
+
+            
+            // Load users for admin panel
+            function loadUsers() {
+                usersRef.on('value', (snapshot) => {
+                    userList.innerHTML = '';
+                    
+                    snapshot.forEach((childSnapshot) => {
+                        const uid = childSnapshot.key;
+                        const userData = childSnapshot.val();
+                        
+                        // Skip the current user if it's the administrator
+                        // REMOVED THE CONDITION THAT WAS SKIPPING THE ADMIN USER
+                        
+                        const userItem = document.createElement('div');
+                        userItem.className = 'admin-user-item';
+                        userItem.setAttribute('data-uid', uid);
+                        
+                        userItem.innerHTML = `
+                            <div class="admin-user-info">
+                                <div class="admin-user-email">${userData.email}</div>
+                                <div class="admin-user-name">${userData.name}</div>
+                                <div class="admin-user-role"><span class="role-badge badge-${userData.role}">${userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}</span></div>
+                                ${userData.class ? `<div class="admin-user-class">Class: ${userData.class}</div>` : ''}
+                            </div>
+                            <div class="admin-user-actions">
+                                <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        
+                        userList.appendChild(userItem);
+                        
+                        // Add event listeners
+                        const editBtn = userItem.querySelector('.btn-edit');
+                        const deleteBtn = userItem.querySelector('.btn-danger');
+                        
+                        editBtn.addEventListener('click', () => {
+                            openEditModal(uid, userData);
+                        });
+                        
+                        deleteBtn.addEventListener('click', () => {
+    if (userData.role === 'administrator') {
+        alert("❌ You cannot delete an Administrator account!");
+        return;
+    }
+    if (confirm(`Are you sure you want to delete ${userData.email}?`)) {
+        // Delete user from database (optional: also remove from auth with admin SDK server-side)
+        usersRef.child(uid).remove();
+        loadUsers(); // Refresh the list after deletion
+    }
+});
+
+                    });
+                });
+            }
+            
+            // Open edit modal
+            function openEditModal(uid, userData) {
+                currentEditUser = { uid, ...userData };
+                editUserName.value = userData.name;
+                editUserRole.value = userData.role;
+                
+                // Show/hide class assignment based on role
+                if (userData.role === 'teacher') {
+                    editClassAssignGroup.style.display = 'block';
+                    editUserClass.value = userData.class || 'A1';
+                } else {
+                    editClassAssignGroup.style.display = 'none';
+                }
+                
+                editUserModal.style.display = 'flex';
+            }
+            
+            // Save user changes
+            saveUserBtn.addEventListener('click', async () => {
+                if (!currentEditUser) return;
+                
+                const newName = editUserName.value.trim();
+                const newRole = editUserRole.value;
+                const newClass = newRole === 'teacher' ? editUserClass.value : null;
+                
+                editUserError.style.display = 'none';
+                editUserSuccess.style.display = 'none';
+                
+                if (!newName) {
+                    editUserError.textContent = "Please enter a name";
+                    editUserError.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Update user in database
+                    await usersRef.child(currentEditUser.uid).update({
+                        name: newName,
+                        role: newRole,
+                        class: newClass
+                    });
+                    
+                    // If editing current user, update UI
+                    if (currentUser.uid === currentEditUser.uid) {
+                        userDisplayName = newName;
+                        userRole = newRole;
+                        userAssignedClass = newClass;
+                        updateUserUI();
+                    }
+                    
+                    editUserSuccess.textContent = "User updated successfully!";
                     editUserSuccess.style.display = 'block';
-                    loadUsers(); // Refresh user list
                     
                     setTimeout(() => {
                         editUserModal.style.display = 'none';
                         editUserSuccess.style.display = 'none';
-                        currentEditUser = null;
                     }, 2000);
-
+                    
                 } catch (error) {
                     editUserError.textContent = `Error updating user: ${error.message}`;
                     editUserError.style.display = 'block';
