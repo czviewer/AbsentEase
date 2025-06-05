@@ -975,7 +975,6 @@
 .btn-group.center-buttons .btn {
     margin: 0 5px;
 }
-
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -1090,9 +1089,9 @@
     <div id="attendance-screen">
         <div class="container">
             <header>
-                <button id="attendance-logout-btn" class="btn btn-logout"> 
+<button id="attendance-logout-btn" class="btn btn-logout"> 
                         <i class="fas fa-sign-out-alt"></i> Logout
-                 </button>  
+                    </button>
                 <img id="attendance-header-logo" src="https://cdn.imgchest.com/files/7mmc9jrkvv7.png" alt="Logo">
                 <div class="header-content">
                     <div class="app-title">
@@ -1586,8 +1585,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
     <script>
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBBSXXDKjH2kk7c8oaMPEZLDPrbi9L4is4",
+            apiKey: "AIzaSyBBSXXDKjH2kk7c8oaMPEZLDPrbi9L4is4", // Replace with your actual API key if needed
             authDomain: "cvkm-52da0.firebaseapp.com",
             databaseURL: "https://cvkm-52da0-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cvkm-52da0",
@@ -1597,32 +1597,38 @@
             measurementId: "G-R330EPDEMG"
         };
 
+        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const auth = firebase.auth();
         
+        // --- Global Loader Functions ---
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
 
+        // --- User State Variables ---
         let currentUser = null;
         let userRole = 'teacher'; 
         let userDisplayName = 'Guest User'; 
         let userAssignedClass = null; 
-        let allClassesData = {}; // Store class data { A1: ["Student1", ...], B2: [...] }
-        let allStudentNames = {}; // Store { className: { roll: name } } for quick lookup
-        let usersLoaded = false; 
+        let allClassesData = {}; // Stores class data: { "A1": ["Student1", ...], "B2": [...] }
+        let allStudentNames = {}; // Stores { className: { roll: name } } for quick lookup
+        let usersLoaded = false; // Flag for admin panel user list
 
-        // Centralized function to display messages
+        // --- Centralized Message Display Function ---
         function showMessage(elementId, message, isSuccess = true) {
             const el = document.getElementById(elementId);
-            if (!el) return;
+            if (!el) {
+                console.warn(`showMessage: Element with ID '${elementId}' not found.`);
+                return;
+            }
             el.textContent = message;
-            el.className = isSuccess ? 'success-message' : 'error-message'; // Ensure correct class for styling
+            el.className = isSuccess ? 'success-message' : 'error-message';
             el.style.display = 'block';
             setTimeout(() => { el.style.display = 'none'; }, 4000);
         }
         
-        // Function to log activities
+        // --- Activity Logging Function ---
         async function logActivity(action, details = {}) {
             if (!currentUser) {
                 console.warn("Attempted to log activity without a current user.", action, details);
@@ -1635,8 +1641,10 @@
                 userName: userDisplayName, 
                 action: action,
                 details: details,
-                device: details.device || getDeviceDetails(),
-        ip: await fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => data.ip).catch(() => 'Unknown')
+                // Capture device details for the log
+                device: details.device || getDeviceDetails(), 
+                // Attempt to get IP address (best effort, can be unreliable or blocked)
+                ip: await fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => data.ip).catch(() => 'Unknown')
             };
             try {
                 const logRef = database.ref('activityLogs').push(); 
@@ -1648,13 +1656,14 @@
 
 
         document.addEventListener("DOMContentLoaded", function () {
+            // --- DOM Element References ---
             // Screen elements
             const splashScreen = document.getElementById("splash-screen");
             const loginScreen = document.getElementById("login-screen");
             const mainScreen = document.getElementById("main-screen");
             const attendanceScreen = document.getElementById("attendance-screen");
             const adminPanel = document.getElementById("admin-panel");
-            const messageEl = document.getElementById("message");
+            const messageEl = document.getElementById("message"); // For splash screen
             
             // Modals
             const editUserModal = document.getElementById("edit-user-modal");
@@ -1666,19 +1675,19 @@
             const passwordInput = document.getElementById("password-input");
             const loginError = document.getElementById("login-error");
             
-            // Logout buttons
+            // Logout buttons (ensure all are present in the HTML or check for existence)
             const logoutButtons = [
                 document.getElementById("logout-btn"),
                 document.getElementById("attendance-logout-btn"),
                 document.getElementById("admin-logout-btn")
-            ];
+            ].filter(btn => btn); // Filter out nulls if some buttons don't exist
 
             // Navigation buttons
             const attendanceBtn = document.getElementById("attendance-btn");
-            const backBtn = document.getElementById("back-btn"); 
-            const adminBackBtn = document.getElementById("admin-back-btn"); 
-            const adminPanelBtn = document.getElementById("admin-panel-btn"); 
-            const adminPanelBtn2 = document.getElementById("admin-panel-btn2"); 
+            const backBtn = document.getElementById("back-btn"); // Back from attendance
+            const adminBackBtn = document.getElementById("admin-back-btn"); // Back from admin
+            const adminPanelBtn = document.getElementById("admin-panel-btn"); // To admin from main
+            const adminPanelBtn2 = document.getElementById("admin-panel-btn2"); // To admin from attendance
 
             // Main screen (absentee sharing) elements
             const mainErrorMessage = document.getElementById("error-message");
@@ -1775,48 +1784,71 @@
             const securitySettingsError = document.getElementById('security-settings-error');
             const securitySettingsSuccess = document.getElementById('security-settings-success');
 
+            // Admin Panel - Device Management
+            const saveDeviceSettingsBtn = document.getElementById('save-device-settings-btn');
+            const maxDevicesInput = document.getElementById('max-devices');
+            const userDevicesListContainer = document.getElementById('user-devices-list');
+            const deviceUserFilterInput = document.getElementById('device-user-filter');
 
+
+            // --- Firebase Refs and State ---
             let usersDataRef = database.ref('users');
-            let currentEditUserUID = null; 
+            let currentEditUserUID = null; // For editing user in admin panel
 
+            // --- Welcome Message for Splash Screen ---
             const welcomeMessage = "Welcome To AbsentEase!\nMade By 2023-25 CS Students...";
 
-            // --- Initial Setup ---
+            // --- Initial Application Setup ---
             async function initializeApp() {
-                await loadAllClassesData(); // Load class data first
-                populateClassSelectors(); // Then populate selectors
-                auth.onAuthStateChanged(handleAuthStateChange); // Setup auth listener
-                setupAdminPanelTabs();
-                setupModalCloseButtons();
-                setTodaysDateForDateInputs();
-                loadSystemSettings(); // Load system settings on init
-                loadAttendanceSettings(); // Load attendance settings on init
-                loadDeviceSettings();
+                await loadAllClassesData(); // Load class data (names, rolls)
+                populateClassSelectors();   // Populate all <select> elements for classes
+                auth.onAuthStateChanged(handleAuthStateChange); // Setup Firebase auth listener
+                setupAdminPanelTabs();      // Setup tab navigation for admin panel
+                setupAttendanceTabs();      // Setup tab navigation for attendance screen
+                setupModalCloseButtons();   // Setup close actions for all modals
+                setTodaysDateForDateInputs(); // Set default date for date pickers
+                loadSystemSettings();       // Load and apply system-wide settings
+                loadAttendanceSettings();   // Load attendance specific settings
+                loadDeviceSettings();       // Load device management settings
+                setupDeviceManagementListeners(); // Listeners for device management tab
             }
 
+            // --- Data Loading Functions ---
             async function loadAllClassesData() {
                 try {
                     const snapshot = await database.ref('classes').once('value');
                     allClassesData = snapshot.val() || {};
-                    allStudentNames = {}; // Reset
+                    allStudentNames = {}; // Reset before populating
                     for (const className in allClassesData) {
                         allStudentNames[className] = {};
                         if (Array.isArray(allClassesData[className])) {
-                            allClassesData[className].forEach((name, roll) => {
+                            // Assuming array index is roll number (0-indexed)
+                            // And Firebase stores arrays as objects with numeric keys if sparse
+                            // If roll numbers are 1-indexed, adjust accordingly
+                            allClassesData[className].forEach((name, index) => {
+                                const roll = index; // Or index + 1 if 1-indexed
                                 if (name && name !== "Coming Soon" && name !== "\"Coming Soon\"") {
                                     allStudentNames[className][roll] = name;
                                 }
                             });
+                        } else if (typeof allClassesData[className] === 'object' && allClassesData[className] !== null) {
+                            // Handle if data is stored as { roll1: name1, roll2: name2 }
+                            for(const roll in allClassesData[className]) {
+                                const name = allClassesData[className][roll];
+                                 if (name && name !== "Coming Soon" && name !== "\"Coming Soon\"") {
+                                    allStudentNames[className][roll] = name;
+                                }
+                            }
                         }
                     }
                 } catch (error) {
                     console.error("Error loading class data:", error);
-                    showMessage(mainErrorMessage.id, "Failed to load class data.", false);
+                    showMessage(mainErrorMessage.id, "Failed to load class data. Some features might not work.", false);
                 }
             }
             
             function populateClassSelectors() {
-                const classNames = Object.keys(allClassesData);
+                const classNames = Object.keys(allClassesData).sort(); // Sort class names
                 const selectorsToPopulate = [
                     classSelectorMain, attendanceClassSelector, studentClassSelectorIndividual,
                     newUserClassSelect, editUserClassModalSelect, mgmtAttClassSelector
@@ -1824,7 +1856,7 @@
 
                 selectorsToPopulate.forEach(selector => {
                     if (selector) {
-                        selector.innerHTML = ''; // Clear existing
+                        selector.innerHTML = ''; // Clear existing options
                         if (classNames.length === 0) {
                             const defaultOption = document.createElement('option');
                             defaultOption.textContent = "No classes available";
@@ -1834,20 +1866,20 @@
                              classNames.forEach(clsName => {
                                 const option = document.createElement('option');
                                 option.value = clsName;
-                                option.textContent = `Class ${clsName}`;
+                                option.textContent = `Class ${clsName}`; // Display format
                                 selector.appendChild(option);
                             });
                         }
-                        // Trigger change for the main class selector to set initial studentsDataRef
+                        // Trigger change for the main class selector to set initial studentsDataRef if applicable
                         if (selector.id === 'class-selector' && classNames.length > 0) {
-                             selector.dispatchEvent(new Event('change'));
+                             selector.dispatchEvent(new Event('change')); // Ensure initial data ref is set
                         }
                     }
                 });
             }
             
             function setTodaysDateForDateInputs() {
-                const today = new Date().toISOString().split('T')[0];
+                const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
                 const dateInputs = [
                     dateSelectorAttendance, mgmtAttStartDateInput, mgmtAttEndDateInput,
                     logStartDateInput, logEndDateInput
@@ -1855,93 +1887,121 @@
                 dateInputs.forEach(input => { if(input) input.value = today; });
             }
 
+            // --- UI Setup Functions (Tabs, Modals) ---
+            function setupTabs(tabContainerSelector, activeTabClass = 'active') {
+                const tabContainer = document.querySelector(tabContainerSelector);
+                if (!tabContainer) return;
 
-            function setupAdminPanelTabs() {
-                const adminTabs = document.querySelectorAll('#admin-panel .tabs .tab');
-                const adminTabContents = document.querySelectorAll('#admin-panel .tab-content');
-                adminTabs.forEach(tab => {
+                const tabs = tabContainer.querySelectorAll('.tabs .tab');
+                const tabContents = tabContainer.querySelectorAll('.tab-content');
+
+                tabs.forEach(tab => {
                     tab.addEventListener('click', () => {
-                        adminTabs.forEach(t => t.classList.remove('active'));
-                        adminTabContents.forEach(c => c.classList.remove('active'));
-                        tab.classList.add('active');
+                        tabs.forEach(t => t.classList.remove(activeTabClass));
+                        tabContents.forEach(c => c.classList.remove(activeTabClass));
+                        
+                        tab.classList.add(activeTabClass);
                         const tabId = tab.getAttribute('data-tab');
-                        const activeContent = document.getElementById(`${tabId}-tab`);
-                        if (activeContent) activeContent.classList.add('active');
-                        logActivity('admin_navigate_tab', { tab: tabId });
+                        const activeContent = tabContainer.querySelector(`#${tabId}-tab`);
+                        if (activeContent) activeContent.classList.add(activeTabClass);
+                        
+                        // Log navigation if it's the admin panel
+                        if (tabContainerSelector === '#admin-panel') {
+                           logActivity('admin_navigate_tab', { tab: tabId });
+                        }
+                         // If device tab is clicked in admin, load devices
+                        if (tabContainerSelector === '#admin-panel' && tabId === 'devices') {
+                            loadAndDisplayUserDevices();
+                        }
                     });
                 });
             }
+
+            function setupAdminPanelTabs() { setupTabs('#admin-panel'); }
+            function setupAttendanceTabs() { setupTabs('#attendance-screen'); }
             
             function setupModalCloseButtons() {
-                // User Edit Modal
-                if(closeEditUserModalBtn) closeEditUserModalBtn.addEventListener('click', () => editUserModal.style.display = 'none');
-                if(cancelEditUserBtn) cancelEditUserBtn.addEventListener('click', () => editUserModal.style.display = 'none');
-                
-                // Attendance Edit Modal
-                if(closeEditAttendanceModalBtn) closeEditAttendanceModalBtn.addEventListener('click', () => editAttendanceModal.style.display = 'none');
-                if(cancelEditAttendanceBtn) cancelEditAttendanceBtn.addEventListener('click', () => editAttendanceModal.style.display = 'none');
+                const modals = [
+                    { modal: editUserModal, closeBtn: closeEditUserModalBtn, cancelBtn: cancelEditUserBtn },
+                    { modal: editAttendanceModal, closeBtn: closeEditAttendanceModalBtn, cancelBtn: cancelEditAttendanceBtn }
+                ];
 
-                window.addEventListener('click', (e) => {
-                    if (e.target === editUserModal) editUserModal.style.display = 'none';
-                    if (e.target === editAttendanceModal) editAttendanceModal.style.display = 'none';
+                modals.forEach(item => {
+                    if (item.modal) {
+                        if(item.closeBtn) item.closeBtn.addEventListener('click', () => item.modal.style.display = 'none');
+                        if(item.cancelBtn) item.cancelBtn.addEventListener('click', () => item.modal.style.display = 'none');
+                        // Close modal if clicked outside content
+                        window.addEventListener('click', (e) => {
+                            if (e.target === item.modal) item.modal.style.display = 'none';
+                        });
+                    }
                 });
             }
 
-
+            // --- Splash Screen Handler ---
             async function handleSplashScreen() {
-                await typeMessage(welcomeMessage, messageEl);
-                splashScreen.classList.add("fade-out");
-                setTimeout(() => { splashScreen.style.display = "none"; }, 500);
+                if(messageEl) await typeMessage(welcomeMessage, messageEl); // Type out message
+                if(splashScreen) {
+                    splashScreen.classList.add("fade-out");
+                    setTimeout(() => { splashScreen.style.display = "none"; }, 500); // Delay hide for fade effect
+                }
             }
 
             function typeMessage(msg, element) {
                 return new Promise(resolve => {
                     let index = 0;
+                    element.innerHTML = ''; // Clear previous text
                     function type() {
                         if (index < msg.length) {
                             element.innerHTML += msg[index] === '\n' ? '<br>' : msg[index];
                             index++;
-                            setTimeout(type, 50);
+                            setTimeout(type, 50); // Typing speed
                         } else {
-                            setTimeout(resolve, 1500);
+                            setTimeout(resolve, 1500); // Pause after typing
                         }
                     }
                     type();
                 });
             }
 
+            // --- Auth State and UI Update Functions ---
             function updateUserUIDisplay() {
                 const roleBadgeElements = [
                     document.getElementById('user-role-badge'),
                     document.getElementById('attendance-role-badge'),
                     document.getElementById('admin-role-badge')
-                ];
+                ].filter(el => el); // Filter out nulls
+
                 roleBadgeElements.forEach(badge => {
-                    if (badge) {
-                        badge.className = 'role-badge'; 
-                        badge.classList.add(`badge-${userRole}`);
-                        badge.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-                    }
+                    badge.className = 'role-badge'; // Reset classes
+                    badge.classList.add(`badge-${userRole}`); // Add role-specific class
+                    badge.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1); // Capitalize role
                 });
                 
-                document.getElementById('user-display-name').textContent = userDisplayName;
-                document.getElementById('attendance-user-name').textContent = userDisplayName;
-                document.getElementById('admin-user-name').textContent = userDisplayName;
+                // Update display names
+                const displayNameElements = [
+                    document.getElementById('user-display-name'),
+                    document.getElementById('attendance-user-name'),
+                    document.getElementById('admin-user-name')
+                ].filter(el => el);
+                displayNameElements.forEach(el => el.textContent = userDisplayName);
                 
+                // Show/hide admin panel buttons based on role
                 const showAdminAccess = userRole === 'administrator';
-                adminPanelBtn.style.display = showAdminAccess ? 'inline-flex' : 'none';
-                adminPanelBtn2.style.display = showAdminAccess ? 'inline-flex' : 'none';
+                if(adminPanelBtn) adminPanelBtn.style.display = showAdminAccess ? 'inline-flex' : 'none';
+                if(adminPanelBtn2) adminPanelBtn2.style.display = showAdminAccess ? 'inline-flex' : 'none';
                 
-                updateRoleBasedClassSelectors();
+                updateRoleBasedClassSelectors(); // Update class selectors based on role (e.g., teacher's assigned class)
             }
             
             function updateRoleBasedClassSelectors() {
-                const selectorsForRoleFiltering = [attendanceClassSelector, studentClassSelectorIndividual];
-                const classNames = Object.keys(allClassesData);
+                // Selectors that might be restricted by role (e.g., teacher sees only their class)
+                const selectorsForRoleFiltering = [classSelectorMain, attendanceClassSelector, studentClassSelectorIndividual];
+                const classNames = Object.keys(allClassesData).sort();
 
                 selectorsForRoleFiltering.forEach(selector => {
                     if (!selector) return;
-                    const currentVal = selector.value;
+                    const currentVal = selector.value; // Preserve selection if possible
                     selector.innerHTML = ''; 
                     
                     if (userRole === 'teacher' && userAssignedClass) {
@@ -1951,11 +2011,11 @@
                             option.textContent = `Class ${userAssignedClass}`;
                             selector.appendChild(option);
                         } else {
-                            selector.innerHTML = '<option disabled>No assigned class found</option>';
+                            selector.innerHTML = '<option disabled selected>No assigned class found</option>';
                         }
-                    } else { // Admins, principals, or general class selector
+                    } else { // For admins, principals, or if teacher has no specific class assigned
                         if (classNames.length === 0) {
-                             selector.innerHTML = '<option disabled>No classes available</option>';
+                             selector.innerHTML = '<option disabled selected>No classes available</option>';
                         } else {
                             classNames.forEach(clsName => {
                                 const option = document.createElement('option');
@@ -1964,15 +2024,22 @@
                                 selector.appendChild(option);
                             });
                             if (currentVal && classNames.includes(currentVal)) {
-                                selector.value = currentVal; // Preserve selection if possible
+                                selector.value = currentVal; 
+                            } else if (classNames.length > 0) {
+                                selector.value = classNames[0]; // Default to first class if previous selection is invalid
                             }
                         }
+                    }
+                     // Trigger change event for main class selector to load initial data
+                    if (selector.id === 'class-selector') {
+                        selector.dispatchEvent(new Event('change'));
                     }
                 });
             }
 
             async function handleAuthStateChange(user) {
-                if (!splashScreen.classList.contains('fade-out')) { // Ensure splash is handled first
+                // Ensure splash screen is handled only once on initial load
+                if (splashScreen && !splashScreen.classList.contains('fade-out')) {
                     await handleSplashScreen();
                 }
                 showLoader();
@@ -1984,118 +2051,119 @@
                         
                         if (snapshot.exists()) {
                             const userData = snapshot.val();
-                            userRole = userData.role || 'teacher'; 
-                            userDisplayName = userData.name || user.email.split('@')[0];
+                            userRole = userData.role || 'teacher'; // Default to teacher if role not set
+                            userDisplayName = userData.name || user.email.split('@')[0]; // Fallback name
                             userAssignedClass = userData.class || null;
                             
-                            updateUserUIDisplay(); 
+                            updateUserUIDisplay(); // Update all UI elements related to user info
                             
-                            loginScreen.style.display = "none";
+                            loginScreen.style.display = "none"; // Hide login screen
+                            // Handle navigation based on URL hash or default to main screen
                             const currentHash = window.location.hash;
                             if (currentHash === '#admin' && userRole === 'administrator') {
                                 adminPanel.style.display = "block";
                                 mainScreen.style.display = "none"; attendanceScreen.style.display = "none";
+                                loadAndDisplayUserDevices(); // Load devices if landing on admin/devices tab
                             } else if (currentHash === '#attendance') {
                                 attendanceScreen.style.display = "block";
                                 mainScreen.style.display = "none"; adminPanel.style.display = "none";
                             } else {
                                 mainScreen.style.display = "block";
                                 attendanceScreen.style.display = "none"; adminPanel.style.display = "none";
-                                if (currentHash && currentHash !== '#') window.location.hash = ''; 
+                                if (currentHash && currentHash !== '#') window.location.hash = ''; // Clear invalid hash
                             }
                             
+                            // Load admin-specific data if user is administrator and data not yet loaded
                             if (userRole === 'administrator' && !usersLoaded) {  
                                 loadUsersForAdminTable();
-                                usersLoaded = true;
+                                usersLoaded = true; // Set flag
                             }
-                            // Log login after user data is loaded
-                            // Avoid logging if it's just a page refresh and user was already logged in (tricky to detect perfectly client-side)
-                            // For simplicity, we might log every time onAuthStateChanged confirms an active user.
-                            // Or, add a flag to only log on explicit login action.
-                            // For now, let's log it, assuming this function is primarily hit after explicit login or initial load.
-                            // Consider adding a session flag if more precise "new login" logging is needed.
-                            // logActivity('login_session_active'); 
+                            // Log successful session start (consider adding a flag to log only on explicit new login vs. refresh)
+                            // logActivity('login_session_active', { email: user.email }); 
 
                         } else {
-                            console.error("User data not found in database. Logging out.");
+                            console.error("User data not found in database for UID:", user.uid, ". Logging out.");
                             await logActivity('auth_error', { error: 'User data not found in DB', email: user.email });
                             auth.signOut(); 
                         }
                     } catch (error) {
                         console.error("Error fetching user data:", error);
-                        await logActivity('auth_error', { error: 'Failed to fetch user data', message: error.message });
+                        await logActivity('auth_error', { error: 'Failed to fetch user data', message: error.message, email: user.email });
                         auth.signOut(); 
                     }
-                } else { 
+                } else { // No user logged in
                     currentUser = null; userRole = 'guest'; userDisplayName = 'Guest';
+                    // Hide all authenticated screens, show login screen
                     mainScreen.style.display = "none"; attendanceScreen.style.display = "none";
                     adminPanel.style.display = "none"; loginScreen.style.display = "block";
-                    usersLoaded = false; 
-                    if (window.location.hash) window.location.hash = ''; 
+                    usersLoaded = false; // Reset admin data loaded flag
+                    if (window.location.hash) window.location.hash = ''; // Clear any navigation hash
                 }
                 hideLoader(); 
             }
             
+            // --- Event Listener for Login Button ---
             if(loginBtn) {
-                loginBtn.addEventListener("click", () => {
+                loginBtn.addEventListener("click", async () => { // Made async for logActivity
                     showLoader();
                     const email = emailInput.value.trim();
                     const password = passwordInput.value;
 
                     if (!email || !password) {
-                        loginError.textContent = "Please fill in both fields.";
-                        loginError.style.display = "block";
+                        showMessage(loginError.id, "Please fill in both email and password.", false);
                         hideLoader();
                         return;
                     }
 
-                    auth.signInWithEmailAndPassword(email, password)
-                        .then(async (userCredential) => { 
-                            await logActivity('login_success', { email: email });
-                            loginError.style.display = "none";
-                            // onAuthStateChanged will handle UI and further loading
-                        })
-                        .catch(async (error) => {
-                            loginError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
-                            loginError.style.display = "block";
-                            await logActivity('login_failure', { email: email, error: error.message });
-                            hideLoader();
-                        });
+                    try {
+                        await auth.signInWithEmailAndPassword(email, password);
+                        // onAuthStateChanged will handle UI updates and further loading.
+                        // Log successful login attempt here as onAuthStateChanged might fire on refresh too.
+                        await logActivity('login_success', { email: email, device: getDeviceDetails() });
+                        loginError.style.display = "none"; // Clear previous errors
+                    } catch (error) {
+                        showMessage(loginError.id, `<i class="fas fa-exclamation-circle"></i> Login failed: ${error.message}`, false);
+                        await logActivity('login_failure', { email: email, error: error.message, device: getDeviceDetails() });
+                        hideLoader();
+                    }
                 });
             }
             
+            // --- Event Listener for Logout Buttons ---
             function handleLogoutAction() {
                 showLoader();
-                const emailBeforeLogout = currentUser ? currentUser.email : 'unknown_user';
+                const emailBeforeLogout = currentUser ? currentUser.email : 'unknown_user_logging_out';
                 auth.signOut()
-                    .then(async () => { // onAuthStateChanged will handle UI changes
-                        await logActivity('logout', { email: emailBeforeLogout });
-                        // hideLoader() will be called by onAuthStateChanged
+                    .then(async () => { 
+                        // onAuthStateChanged will handle UI changes to show login screen.
+                        await logActivity('logout', { email: emailBeforeLogout, device: getDeviceDetails() });
+                        // hideLoader() will be called by onAuthStateChanged after it processes the signed-out state.
                     })
                     .catch(async (error) => { 
                         console.error("Logout error:", error);
-                        await logActivity('logout_failure', { email: emailBeforeLogout, error: error.message });
-                        hideLoader(); 
+                        showMessage(loginError.id, `Logout failed: ${error.message}`, false); // Show error on login screen if visible
+                        await logActivity('logout_failure', { email: emailBeforeLogout, error: error.message, device: getDeviceDetails() });
+                        hideLoader(); // Explicitly hide loader on error here
                     });
             }
             logoutButtons.forEach(btn => { if(btn) btn.addEventListener("click", handleLogoutAction); });
             
-            // --- Navigation ---
+            // --- Navigation Event Listeners ---
             if(attendanceBtn) attendanceBtn.addEventListener("click", () => {
                 mainScreen.style.display = "none"; attendanceScreen.style.display = "block"; adminPanel.style.display = "none";
-                window.location.hash = '#attendance';
+                window.location.hash = '#attendance'; // Update hash for deep linking/refresh
                 logActivity('navigate', { to: 'attendance_screen' });
             });
             
             if(backBtn) backBtn.addEventListener("click", () => { // Back from attendance to main
                 attendanceScreen.style.display = "none"; mainScreen.style.display = "block"; adminPanel.style.display = "none";
-                window.location.hash = '';
+                window.location.hash = ''; // Clear hash
                 logActivity('navigate', { to: 'main_screen', from: 'attendance_screen' });
             });
             
             if(adminBackBtn) adminBackBtn.addEventListener("click", () => { // Back from admin to main
                 adminPanel.style.display = "none"; mainScreen.style.display = "block"; attendanceScreen.style.display = "none";
-                window.location.hash = '';
+                window.location.hash = ''; // Clear hash
                 logActivity('navigate', { to: 'main_screen', from: 'admin_panel' });
             });
             
@@ -2105,72 +2173,102 @@
                     return;
                 }
                 mainScreen.style.display = "none"; attendanceScreen.style.display = "none"; adminPanel.style.display = "block";
-                window.location.hash = '#admin';
+                window.location.hash = '#admin'; // Update hash
                 logActivity('navigate', { to: 'admin_panel' });
-                if (!usersLoaded) { // Load users if not already loaded
+                if (!usersLoaded) { // Load users if not already loaded (e.g., direct navigation via hash)
                     loadUsersForAdminTable();
                     usersLoaded = true;
                 }
+                // Ensure the first tab in admin panel is active if navigating directly
+                const firstAdminTab = document.querySelector('#admin-panel .tabs .tab');
+                const firstAdminTabContent = document.querySelector('#admin-panel .tab-content');
+                if(firstAdminTab && !firstAdminTab.classList.contains('active')){
+                    document.querySelectorAll('#admin-panel .tabs .tab, #admin-panel .tab-content').forEach(el => el.classList.remove('active'));
+                    firstAdminTab.classList.add('active');
+                    if(firstAdminTabContent) firstAdminTabContent.classList.add('active');
+                }
+
             }
             if(adminPanelBtn) adminPanelBtn.addEventListener("click", showAdminPanelScreen);
             if(adminPanelBtn2) adminPanelBtn2.addEventListener("click", showAdminPanelScreen);
 
             // --- Main Screen (Absentee Sharing) Logic ---
-            let studentsDataRefMain; 
+            let studentsDataRefMain; // Firebase ref for selected class's students
             if(classSelectorMain) {
                 classSelectorMain.addEventListener('change', (e) => {
                     const selectedClass = e.target.value;
-                    if (selectedClass) {
-                        studentsDataRefMain = database.ref(`classes/${selectedClass}`);
+                    if (selectedClass && allClassesData[selectedClass]) {
+                        // This ref might not be needed if allStudentNames is comprehensive
+                        // studentsDataRefMain = database.ref(`classes/${selectedClass}`);
+                        // Clear previous results when class changes
+                        resultsTableBody.innerHTML = '';
+                        shareBtn.style.display = 'none';
+                        rollInput.value = '';
+                    } else {
+                        resultsTableBody.innerHTML = '<tr><td colspan="2">Select a valid class.</td></tr>';
+                        shareBtn.style.display = 'none';
                     }
                 });
             }
 
             if(searchBtn) searchBtn.addEventListener('click', async () => {
-                if (!studentsDataRefMain) {
-                    showMessage(mainErrorMessage.id, "Please select a class first.", false); return;
+                const selectedClass = classSelectorMain.value;
+                if (!selectedClass || !allStudentNames[selectedClass]) {
+                    showMessage(mainErrorMessage.id, "Please select a valid class first.", false); return;
                 }
                 showLoader();
                 const rollInputVal = rollInput.value.trim();
-                const rollNumbers = [...new Set(rollInputVal.split(/[,\s]+/).map(num => parseInt(num)).filter(n => !isNaN(n)))];
-                if (!rollNumbers.length) {
-                    showMessage(mainErrorMessage.id, "Please enter valid roll numbers.", false); hideLoader(); return;
+                // Allow comma or space as delimiters, remove duplicates, parse to int, filter NaNs
+                const rollNumbers = [...new Set(rollInputVal.split(/[,\s]+/).map(num => parseInt(num.trim())).filter(n => !isNaN(n) && n >= 0))];
+                
+                if (!rollNumbers.length && rollInputVal.length > 0) { // If input was given but parsed to nothing valid
+                     showMessage(mainErrorMessage.id, "Please enter valid, non-negative roll numbers.", false); hideLoader(); return;
                 }
+                if (rollNumbers.length === 0 && rollInputVal.length === 0) { // If input is empty, effectively same as "View All" for this class
+                    viewAllBtn.click(); // Programmatically click view all
+                    hideLoader();
+                    return;
+                }
+
                 try {
-                    const snapshot = await studentsDataRefMain.once('value');
-                    const studentArray = snapshot.val() || [];
+                    const studentClassData = allStudentNames[selectedClass] || {};
                     const results = rollNumbers.map(roll => ({
-                        roll, name: studentArray[roll],
-                        isValid: studentArray[roll] && studentArray[roll] !== "Coming Soon" && studentArray[roll] !== "\"Coming Soon\""
-                    })).sort((a, b) => a.roll - b.roll)
+                        roll, 
+                        name: studentClassData[roll], // Access name using roll as key
+                        isValid: studentClassData[roll] // Check if student exists for that roll
+                    })).sort((a, b) => a.roll - b.roll) // Sort by roll number
                        .map(item => item.isValid ? `<tr><td>${item.roll}</td><td>${item.name}</td></tr>`
                                                  : `<tr class="error-row"><td>${item.roll}</td><td>Not Found</td></tr>`);
+                    
                     resultsTableBody.innerHTML = results.join('') || `<tr><td colspan="2">No students found for the given rolls.</td></tr>`;
                     shareBtn.style.display = results.some(r => !r.includes("Not Found")) ? 'inline-flex' : 'none';
-                    logActivity('search_students', { class: classSelectorMain.value, rolls: rollNumbers.join(',') });
+                    await logActivity('search_students', { class: selectedClass, rolls: rollNumbers.join(',') });
                 } catch (error) {
-                    showMessage(mainErrorMessage.id, `Error fetching data: ${error.message}`, false);
-                    logActivity('search_students_error', { class: classSelectorMain.value, error: error.message });
+                    showMessage(mainErrorMessage.id, `Error fetching student data: ${error.message}`, false);
+                    await logActivity('search_students_error', { class: selectedClass, error: error.message });
                 }
                 hideLoader();
             });
             
             if(viewAllBtn) viewAllBtn.addEventListener('click', async () => {
-                if (!classSelectorMain.value || !allStudentNames[classSelectorMain.value]) {
-                     showMessage(mainErrorMessage.id, "Please select a valid class first.", false); return;
+                const selectedClass = classSelectorMain.value;
+                if (!selectedClass || !allStudentNames[selectedClass]) {
+                     showMessage(mainErrorMessage.id, "Please select a valid class to view all students.", false); return;
                 }
                 showLoader();
-                const selectedClass = classSelectorMain.value;
                 const studentsInClass = allStudentNames[selectedClass] || {};
                 let resultsHTML = '';
-                Object.entries(studentsInClass).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).forEach(([roll, name]) => {
-                    resultsHTML += `<tr><td>${roll}</td><td>${name}</td></tr>`;
+                // Sort by roll number (assuming roll numbers are numeric keys)
+                Object.entries(studentsInClass)
+                      .sort((a,b) => parseInt(a[0]) - parseInt(b[0])) 
+                      .forEach(([roll, name]) => {
+                            resultsHTML += `<tr><td>${roll}</td><td>${name}</td></tr>`;
                 });
 
                 resultsTableBody.innerHTML = resultsHTML || `<tr><td colspan="2">No students found in this class.</td></tr>`;
-                shareBtn.style.display = resultsHTML ? 'inline-flex' : 'none';
-                rollInput.value = '';
-                logActivity('view_all_students', { class: selectedClass });
+                shareBtn.style.display = resultsHTML ? 'inline-flex' : 'none'; // Show share if there are students
+                rollInput.value = ''; // Clear roll input when viewing all
+                await logActivity('view_all_students', { class: selectedClass });
                 hideLoader();
             });
 
@@ -2180,60 +2278,84 @@
                 const dd = String(today.getDate()).padStart(2, '0');
                 const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
                 const yyyy = today.getFullYear();
-                const todayFormatted = `${dd}-${mm}-${yyyy}`;
-                const todayDB = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD for DB
+                const todayFormatted = `${dd}-${mm}-${yyyy}`; // For display
+                const todayDB = `${yyyy}-${mm}-${dd}`; // For database key (YYYY-MM-DD for sorting)
                 
                 const rows = resultsTableBody.querySelectorAll('tr');
                 if (rows.length === 0) {
-                    showMessage(mainErrorMessage.id, "No absentees to share.", false); hideLoader(); return;
+                    showMessage(mainErrorMessage.id, "No absentees listed to share.", false); hideLoader(); return;
                 }
                 
                 const selectedClass = classSelectorMain.value;
-                const absentees = [];
+                if (!selectedClass) {
+                     showMessage(mainErrorMessage.id, "No class selected for saving attendance.", false); hideLoader(); return;
+                }
+
+                const absenteesForDB = []; // For storing in Firebase {roll, name}
+                const absenteeNamesForShare = []; // For the text to be shared (names only)
+
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
+                    // Ensure it's a valid student row (not "Not Found" or header)
                     if (cells.length === 2 && cells[1].textContent !== "Not Found") {
-                        absentees.push({ roll: cells[0].textContent, name: cells[1].textContent });
+                        absenteesForDB.push({ roll: cells[0].textContent.trim(), name: cells[1].textContent.trim() });
+                        absenteeNamesForShare.push(cells[1].textContent.trim());
                     }
                 });
                 
-                if (absentees.length === 0) {
-                    showMessage(mainErrorMessage.id, "No valid absentees to share.", false); hideLoader(); return;
+                if (absenteesForDB.length === 0) {
+                    showMessage(mainErrorMessage.id, "No valid absentees to save or share.", false); hideLoader(); return;
                 }
 
                 try {
+                    // Save to Firebase
                     const attendanceRef = database.ref(`attendance/${todayDB}/${selectedClass}`);
-                    await attendanceRef.set({ date: todayDB, class: selectedClass, absentees: absentees, recordedBy: currentUser.uid, recordedAt: firebase.database.ServerValue.TIMESTAMP });
+                    await attendanceRef.set({ 
+                        date: todayDB, 
+                        class: selectedClass, 
+                        absentees: absenteesForDB, 
+                        recordedBy: currentUser.uid, 
+                        recordedByName: userDisplayName,
+                        recordedAt: firebase.database.ServerValue.TIMESTAMP 
+                    });
                     showMessage(mainSuccessMessage.id, "Attendance saved successfully!");
-                    await logActivity('share_attendance_success', { class: selectedClass, date: todayDB, count: absentees.length });
+                    await logActivity('share_attendance_success', { class: selectedClass, date: todayDB, count: absenteesForDB.length });
 
-                    let shareText = `Today's Absentees (${todayFormatted}) - Class ${selectedClass}\n------------------------------------------\n`;
-                    absentees.forEach(item => { shareText += `${item.name} (Roll: ${item.roll})\n`; });
+                    // Prepare text for sharing (as per new format)
+                    let shareText = `Today's Absentees (${todayFormatted})\n---------------------------------------\n`;
+                    absenteeNamesForShare.forEach(name => { shareText += `${name}\n`; });
 
+                    // Use Web Share API if available, otherwise fallback to clipboard
                     if (navigator.share) {
-                        await navigator.share({ title: `Absentees - ${todayFormatted} - Class ${selectedClass}`, text: shareText });
+                        await navigator.share({ 
+                            title: `Absentees - ${todayFormatted}`, // Title for the share dialog
+                            text: shareText 
+                        });
                     } else {
-                        fallbackShareText(shareText, mainSuccessMessage.id, "Absentees list copied to clipboard!");
+                        fallbackShareText(shareText, mainSuccessMessage.id, "Absentees list copied to clipboard! (Share API not available)");
                     }
                 } catch (error) {
-                    showMessage(mainErrorMessage.id, `Error: ${error.message}`, false);
+                    showMessage(mainErrorMessage.id, `Error saving or sharing: ${error.message}`, false);
                     await logActivity('share_attendance_error', { class: selectedClass, date: todayDB, error: error.message });
                 }
                 hideLoader();
             });
             
+            // Fallback for sharing if Web Share API is not available
             function fallbackShareText(text, messageElementId, successText) {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
+                textarea.style.position = 'fixed'; // Prevent scrolling to bottom of page
+                textarea.style.left = '-9999px';
                 document.body.appendChild(textarea);
                 textarea.select();
                 try {
-                    document.execCommand('copy');
+                    document.execCommand('copy'); // execCommand is deprecated but widely supported
                     showMessage(messageElementId, successText, true);
                 } catch (err) {
-                    showMessage(messageElementId, "Could not copy. Please copy manually.", false);
-                    console.error('Fallback copy error:', err);
-                    // Avoid alert() if possible, rely on the message display
+                    showMessage(messageElementId, "Could not copy text. Please copy manually.", false);
+                    console.error('Fallback copy to clipboard error:', err);
+                    // Avoid using alert()
                 }
                 document.body.removeChild(textarea);
             }
@@ -2242,8 +2364,9 @@
             if(loadAttendanceBtn) loadAttendanceBtn.addEventListener('click', async () => {
                 showLoader();
                 const selectedClass = attendanceClassSelector.value;
-                const selectedDate = dateSelectorAttendance.value;
-                const errorElId = 'attendance-error'; // Assuming this ID exists for this section
+                const selectedDate = dateSelectorAttendance.value; // Format YYYY-MM-DD
+                const errorElId = 'attendance-error'; 
+                const successElId = 'attendance-success';
                 
                 if (!selectedClass || !selectedDate) {
                     showMessage(errorElId, "Please select both class and date.", false); hideLoader(); return;
@@ -2252,7 +2375,7 @@
                 try {
                     const studentsInClass = allStudentNames[selectedClass] || {};
                     const totalStudentsCount = Object.keys(studentsInClass).length;
-                    document.getElementById('total-students').textContent = totalStudentsCount;
+                    if(document.getElementById('total-students')) document.getElementById('total-students').textContent = totalStudentsCount;
                     
                     const attendanceRef = database.ref(`attendance/${selectedDate}/${selectedClass}`);
                     const attendanceSnapshot = await attendanceRef.once('value');
@@ -2262,21 +2385,24 @@
                     let tableHTML = '';
                     const absentRolls = new Set(attendanceData && attendanceData.absentees ? attendanceData.absentees.map(a => a.roll.toString()) : []);
 
+                    // Iterate over all students in the class, mark absent or present
                     Object.entries(studentsInClass).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).forEach(([roll, name]) => {
                         const isAbsent = absentRolls.has(roll);
                         if (isAbsent) absentCount++;
                         tableHTML += `
                             <tr>
                                 <td>${roll}</td><td>${name}</td>
-                                <td>${isAbsent ? '<span style="color: var(--danger);"><i class="fas fa-times"></i> <span class="status-indicator status-absent"></span>Absent</span>' 
-                                              : '<span style="color: var(--success);"><i class="fas fa-check"></i> <span class="status-indicator status-present"></span>Present</span>'}</td>
+                                <td>${isAbsent ? '<span class="status-indicator status-absent"></span><span style="color: var(--danger);"><i class="fas fa-times"></i> Absent</span>' 
+                                              : '<span class="status-indicator status-present"></span><span style="color: var(--success);"><i class="fas fa-check"></i> Present</span>'}</td>
                             </tr>`;
                     });
                     
-                    attendanceTableBody.innerHTML = tableHTML || `<tr><td colspan="3" style="text-align:center;">No student data for this class.</td></tr>`;
-                    document.getElementById('absent-today').textContent = absentCount;
+                    attendanceTableBody.innerHTML = tableHTML || `<tr><td colspan="3" style="text-align:center;">No student data found for this class.</td></tr>`;
+                    if(document.getElementById('absent-today')) document.getElementById('absent-today').textContent = absentCount;
                     const attendanceRate = totalStudentsCount > 0 ? Math.round(((totalStudentsCount - absentCount) / totalStudentsCount) * 100) : 0;
-                    document.getElementById('attendance-rate').textContent = `${attendanceRate}%`;
+                    if(document.getElementById('attendance-rate')) document.getElementById('attendance-rate').textContent = `${attendanceRate}%`;
+                    
+                    showMessage(successElId, `Attendance loaded for Class ${selectedClass} on ${selectedDate}.`);
                     await logActivity('load_class_attendance_view', { class: selectedClass, date: selectedDate });
                 } catch (error) {
                     showMessage(errorElId, `Error loading attendance: ${error.message}`, false);
@@ -2289,50 +2415,65 @@
                 showLoader();
                 const selectedClass = studentClassSelectorIndividual.value;
                 const rollNumber = studentRollInputIndividual.value.trim();
-                const errorElId = 'individual-error'; // Assuming this ID exists
+                const errorElId = 'individual-error'; 
+                const successElId = 'individual-success';
                 
                 if (!selectedClass || !rollNumber) {
-                    showMessage(errorElId, "Please select class and enter roll number.", false); hideLoader(); return;
+                    showMessage(errorElId, "Please select a class and enter a roll number.", false); hideLoader(); return;
                 }
                 
                 try {
                     const studentName = (allStudentNames[selectedClass] && allStudentNames[selectedClass][rollNumber]) || "N/A";
                     if (studentName === "N/A") {
-                         showMessage(errorElId, "Student not found in this class.", false); hideLoader(); return;
+                         showMessage(errorElId, `Student with Roll No. ${rollNumber} not found in Class ${selectedClass}.`, false); 
+                         studentAttendanceBodyIndividual.innerHTML = `<tr><td colspan="2" style="text-align:center;">Student not found.</td></tr>`;
+                         if(studentNameDisplayIndividual) studentNameDisplayIndividual.textContent = '-';
+                         hideLoader(); 
+                         return;
                     }
-                    studentNameDisplayIndividual.textContent = `${studentName} (Roll: ${rollNumber})`;
+                    if(studentNameDisplayIndividual) studentNameDisplayIndividual.textContent = `${studentName} (Roll: ${rollNumber}, Class: ${selectedClass})`;
                     
                     const attendanceRecordsRef = database.ref(`attendance`); 
-                    const snapshot = await attendanceRecordsRef.orderByKey().once('value'); // Order by date (key)
+                    // Fetch all attendance data. For large datasets, this needs optimization (e.g., indexing or restructuring data).
+                    const snapshot = await attendanceRecordsRef.orderByKey().once('value'); 
                     const allAttendanceData = snapshot.val();
                     
                     let tableHTML = '';
+                    let recordsFoundForStudent = false;
                     if (allAttendanceData) {
-                        Object.keys(allAttendanceData).forEach(dateKey => { 
+                        // Sort dates chronologically (YYYY-MM-DD string sort works here)
+                        Object.keys(allAttendanceData).sort().forEach(dateKey => { 
+                            // Check if data exists for the specific class on this date
                             if (allAttendanceData[dateKey][selectedClass] && allAttendanceData[dateKey][selectedClass].absentees) {
                                 const isAbsent = allAttendanceData[dateKey][selectedClass].absentees.some(a => a.roll.toString() === rollNumber);
                                 const [year, month, day] = dateKey.split('-');
-                                const formattedDate = `${day}-${month}-${year}`;
+                                const formattedDate = `${day}-${month}-${year}`; // DD-MM-YYYY for display
                                 tableHTML += `
                                     <tr>
                                         <td>${formattedDate}</td>
-                                        <td>${isAbsent ? '<span style="color: var(--danger);"><i class="fas fa-times"></i> <span class="status-indicator status-absent"></span>Absent</span>' 
-                                                      : '<span style="color: var(--success);"><i class="fas fa-check"></i> <span class="status-indicator status-present"></span>Present</span>'}</td>
+                                        <td>${isAbsent ? '<span class="status-indicator status-absent"></span><span style="color: var(--danger);"><i class="fas fa-times"></i> Absent</span>' 
+                                                      : '<span class="status-indicator status-present"></span><span style="color: var(--success);"><i class="fas fa-check"></i> Present</span>'}</td>
                                     </tr>`;
+                                recordsFoundForStudent = true;
                             }
                         });
                     }
-                    studentAttendanceBodyIndividual.innerHTML = tableHTML || `<tr><td colspan="2" style="text-align:center;">No records found.</td></tr>`;
+                    studentAttendanceBodyIndividual.innerHTML = tableHTML || `<tr><td colspan="2" style="text-align:center;">No attendance records found for this student.</td></tr>`;
+                    if (recordsFoundForStudent) {
+                        showMessage(successElId, `Attendance history loaded for ${studentName}.`);
+                    } else {
+                         showMessage(successElId, `No attendance records found for ${studentName}.`, true); // Still a success in loading, just no data
+                    }
                     await logActivity('load_individual_attendance_view', { class: selectedClass, roll: rollNumber });
                 } catch (error) {
-                    showMessage(errorElId, `Error: ${error.message}`, false);
+                    showMessage(errorElId, `Error loading student records: ${error.message}`, false);
                      await logActivity('load_individual_attendance_error', { class: selectedClass, roll: rollNumber, error: error.message });
                 }
                 hideLoader();
             });
 
             // --- Admin Panel - User Management ---
-            let selectedRoleForNewUser = 'teacher'; 
+            let selectedRoleForNewUser = 'teacher'; // Default role for new user
             if(roleOptionsContainer) {
                 const roleOptionDivs = roleOptionsContainer.querySelectorAll(".role-option");
                 roleOptionDivs.forEach(option => {
@@ -2340,14 +2481,15 @@
                         roleOptionDivs.forEach(opt => opt.classList.remove('selected'));
                         option.classList.add('selected');
                         selectedRoleForNewUser = option.getAttribute('data-role');
-                        classAssignGroupForNewUser.style.display = selectedRoleForNewUser === 'teacher' ? 'block' : 'none';
+                        // Show/hide class assignment based on role
+                        if(classAssignGroupForNewUser) classAssignGroupForNewUser.style.display = selectedRoleForNewUser === 'teacher' ? 'block' : 'none';
                     });
                 });
-                // Default selection
+                // Default selection visual state
                 const defaultRoleOption = roleOptionsContainer.querySelector('.role-option[data-role="teacher"]');
                 if (defaultRoleOption) {
                     defaultRoleOption.classList.add('selected');
-                    classAssignGroupForNewUser.style.display = 'block';
+                    if(classAssignGroupForNewUser) classAssignGroupForNewUser.style.display = 'block';
                 }
             }
 
@@ -2355,130 +2497,175 @@
             if(addUserBtn) addUserBtn.addEventListener('click', async () => {
                 showLoader();
                 const email = newUserEmailInput.value.trim();
-                const password = newUserPasswordInput.value;
+                const password = newUserPasswordInput.value; // Do not trim password
                 const name = newUserNameInput.value.trim();
-                const classAssignment = selectedRoleForNewUser === 'teacher' ? newUserClassSelect.value : null;
+                const classAssignment = (selectedRoleForNewUser === 'teacher' && newUserClassSelect) ? newUserClassSelect.value : null;
 
                 if (!email || !password || !name) {
-                    showMessage(adminUserError.id, "⚠️ Please fill in all fields!", false); hideLoader(); return;
+                    showMessage(adminUserError.id, "⚠️ Please fill in email, password, and name!", false); hideLoader(); return;
                 }
-                if (password.length < 6) {
-                    showMessage(adminUserError.id, "🔐 Password must be at least 6 characters!", false); hideLoader(); return;
+                if (password.length < 6) { // Basic password policy check
+                    showMessage(adminUserError.id, "🔐 Password must be at least 6 characters long!", false); hideLoader(); return;
+                }
+                 if (selectedRoleForNewUser === 'teacher' && !classAssignment && newUserClassSelect && newUserClassSelect.options.length > 0) {
+                    showMessage(adminUserError.id, "🧑‍🏫 Please assign a class for the teacher role.", false); hideLoader(); return;
                 }
 
+
                 try {
-                    const tempAppName = `secondaryApp_${Date.now()}`; // Unique name for temp app
+                    // Create user with a temporary Firebase app instance to avoid session conflicts
+                    const tempAppName = `secondaryApp_${Date.now()}`; 
                     const secondaryApp = firebase.initializeApp(firebaseConfig, tempAppName);
                     const secondaryAuth = secondaryApp.auth();
 
                     const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
                     const newUser = userCredential.user;
 
+                    // Save user details in Realtime Database under 'users/{uid}'
                     await database.ref('users/' + newUser.uid).set({
-                        email: email, name: name, role: selectedRoleForNewUser, class: classAssignment, createdAt: firebase.database.ServerValue.TIMESTAMP
+                        email: email, 
+                        name: name, 
+                        role: selectedRoleForNewUser, 
+                        class: classAssignment, // Will be null if not a teacher or no class assigned
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
                     });
+                    // Optionally, update Firebase Auth profile (displayName)
                     await newUser.updateProfile({ displayName: name }); 
 
-                    showMessage(adminUserSuccess.id, `✅ User "${email}" created successfully!`);
-                    await logActivity('create_user_success', { createdUserEmail: email, role: selectedRoleForNewUser });
-                    newUserEmailInput.value = ''; newUserPasswordInput.value = ''; newUserNameInput.value = '';
+                    showMessage(adminUserSuccess.id, `✅ User "${email}" (Role: ${selectedRoleForNewUser}) created successfully!`);
+                    await logActivity('create_user_success', { createdUserEmail: email, role: selectedRoleForNewUser, assignedClass: classAssignment });
+                    // Clear input fields
+                    if(newUserEmailInput) newUserEmailInput.value = ''; 
+                    if(newUserPasswordInput) newUserPasswordInput.value = ''; 
+                    if(newUserNameInput) newUserNameInput.value = '';
+                    if(newUserClassSelect) newUserClassSelect.selectedIndex = 0; // Reset class dropdown
                     
+                    // Clean up temporary Firebase app
                     await secondaryAuth.signOut(); 
                     await secondaryApp.delete(); 
                 } catch (error) {
-                    showMessage(adminUserError.id, `❌ Error: ${error.message}`, false);
+                    showMessage(adminUserError.id, `❌ Error creating user: ${error.message}`, false);
                     await logActivity('create_user_error', { inputEmail: email, error: error.message });
                 }
                 hideLoader();
             });
             
+            // Load users into the admin table
             function loadUsersForAdminTable() {
+                if (!userListTbody) return; // Ensure table body exists
                 usersDataRef.on('value', (snapshot) => { 
-                    userListTbody.innerHTML = ''; 
+                    userListTbody.innerHTML = ''; // Clear existing rows
                     snapshot.forEach((childSnapshot) => {
                         const uid = childSnapshot.key;
                         const userData = childSnapshot.val();
                         
+                        if (!userData) return; // Skip if userData is null/undefined
+
                         const tr = userListTbody.insertRow();
                         tr.innerHTML = `
-                            <td>${userData.email}</td>
-                            <td>${userData.name}</td>
-                            <td><span class="role-badge badge-${userData.role}">${userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}</span></td>
-                            <td>${userData.class || 'N/A'}</td>
+                            <td>${userData.email || 'N/A'}</td>
+                            <td>${userData.name || 'N/A'}</td>
+                            <td><span class="role-badge badge-${userData.role || 'unknown'}">${(userData.role || 'unknown').charAt(0).toUpperCase() + (userData.role || 'unknown').slice(1)}</span></td>
+                            <td>${(userData.role === 'teacher' && userData.class) ? `Class ${userData.class}` : 'N/A'}</td>
                             <td class="admin-user-actions">
-                                <button class="btn btn-primary btn-edit-user" data-uid="${uid}"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-delete-user" data-uid="${uid}"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-primary btn-sm btn-edit-user" data-uid="${uid}" title="Edit User"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm btn-delete-user" data-uid="${uid}" title="Delete User"><i class="fas fa-trash"></i></button>
                             </td>`;
                         
-                        tr.querySelector('.btn-edit-user').addEventListener('click', () => openEditUserModalDialog(uid, userData));
-                        tr.querySelector('.btn-delete-user').addEventListener('click', () => confirmUserDeletion(uid, userData));
+                        // Add event listeners for edit and delete buttons
+                        const editBtn = tr.querySelector('.btn-edit-user');
+                        const deleteBtn = tr.querySelector('.btn-delete-user');
+                        if(editBtn) editBtn.addEventListener('click', () => openEditUserModalDialog(uid, userData));
+                        if(deleteBtn) deleteBtn.addEventListener('click', () => confirmUserDeletion(uid, userData));
                     });
                 }, (error) => {
-                    console.error("Error loading users for admin:", error);
-                    showMessage(adminUserError.id, "Failed to load users.", false);
+                    console.error("Error loading users for admin panel:", error);
+                    if(adminUserError) showMessage(adminUserError.id, "Failed to load user list.", false);
                 });
             }
             
+            // Open the modal to edit user details
             function openEditUserModalDialog(uid, userData) {
                 currentEditUserUID = uid; 
-                editUserNameModalInput.value = userData.name;
-                editUserRoleModalSelect.value = userData.role;
-                editClassAssignGroupModal.style.display = userData.role === 'teacher' ? 'block' : 'none';
-                if (userData.role === 'teacher') editUserClassModalSelect.value = userData.class || (Object.keys(allClassesData)[0] || ''); 
-                editUserModal.style.display = 'flex';
+                if(editUserNameModalInput) editUserNameModalInput.value = userData.name || '';
+                if(editUserRoleModalSelect) editUserRoleModalSelect.value = userData.role || 'teacher';
+                
+                // Show/hide class assignment based on role in modal
+                if(editClassAssignGroupModal) editClassAssignGroupModal.style.display = (userData.role === 'teacher') ? 'block' : 'none';
+                if (userData.role === 'teacher' && editUserClassModalSelect) {
+                    editUserClassModalSelect.value = userData.class || (Object.keys(allClassesData)[0] || ''); 
+                }
+                if(editUserModal) editUserModal.style.display = 'flex'; // Show modal
             }
             
+            // Handle role change within the edit user modal
             if(editUserRoleModalSelect) editUserRoleModalSelect.addEventListener('change', function() {
-                editClassAssignGroupModal.style.display = this.value === 'teacher' ? 'block' : 'none';
+                if(editClassAssignGroupModal) editClassAssignGroupModal.style.display = this.value === 'teacher' ? 'block' : 'none';
             });
 
+            // Save changes from the edit user modal
             if(saveUserChangesBtn) saveUserChangesBtn.addEventListener('click', async () => {
                 if (!currentEditUserUID) return;
                 showLoader();
                 const newName = editUserNameModalInput.value.trim();
                 const newRole = editUserRoleModalSelect.value;
-                const newClass = newRole === 'teacher' ? editUserClassModalSelect.value : null;
+                const newClass = (newRole === 'teacher' && editUserClassModalSelect) ? editUserClassModalSelect.value : null;
                 
                 if (!newName) {
-                    showMessage(editUserModalError.id, "Name cannot be empty.", false); hideLoader(); return;
+                    showMessage(editUserModalError.id, "User name cannot be empty.", false); hideLoader(); return;
+                }
+                if (newRole === 'teacher' && !newClass && editUserClassModalSelect && editUserClassModalSelect.options.length > 0) {
+                    showMessage(editUserModalError.id, "Please assign a class for the teacher role.", false); hideLoader(); return;
                 }
                 
                 try {
-                    const updates = { name: newName, role: newRole, class: newClass, updatedAt: firebase.database.ServerValue.TIMESTAMP };
+                    const updates = { 
+                        name: newName, 
+                        role: newRole, 
+                        class: newClass, // Will be null if not teacher or no class assigned
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP 
+                    };
                     await usersDataRef.child(currentEditUserUID).update(updates);
                     
+                    // If editing the currently logged-in user, update their local state and UI
                     if (currentUser && currentUser.uid === currentEditUserUID) {
                         userDisplayName = newName; userRole = newRole; userAssignedClass = newClass;
                         updateUserUIDisplay(); 
                     }
-                    showMessage(editUserModalSuccess.id, "User updated successfully!");
-                    await logActivity('edit_user_success', { targetUserUID: currentEditUserUID, changes: updates });
-                    setTimeout(() => { editUserModal.style.display = 'none'; }, 2000);
+                    showMessage(editUserModalSuccess.id, "User details updated successfully!");
+                    await logActivity('edit_user_success', { targetUserUID: currentEditUserUID, changes: { name: newName, role: newRole, class: newClass} });
+                    setTimeout(() => { if(editUserModal) editUserModal.style.display = 'none'; }, 2000); // Auto-close modal
                 } catch (error) {
-                    showMessage(editUserModalError.id, `Error: ${error.message}`, false);
+                    showMessage(editUserModalError.id, `Error updating user: ${error.message}`, false);
                      await logActivity('edit_user_error', { targetUserUID: currentEditUserUID, error: error.message });
                 }
                 hideLoader();
             });
             
+            // Confirm user deletion (using a custom modal/dialog in a real app is better than confirm())
             function confirmUserDeletion(uid, userData) {
-                if (userData.role === 'administrator') {
-                    // Using custom message for admin panel
-                    showMessage(adminUserError.id, "❌ Administrator accounts cannot be deleted through this panel.", false);
+                if (userData.role === 'administrator' && uid === currentUser.uid) {
+                    showMessage(adminUserError.id, "❌ Administrators cannot delete their own account.", false);
                     return;
                 }
-                // Replace confirm with a custom modal in a real app for better UX
-                if (window.confirm(`Are you sure you want to delete user ${userData.email}? This action is irreversible from the database (auth record may persist).`)) {
-                    deleteUserFromDatabase(uid, userData.email);
+                 if (userData.role === 'administrator') {
+                    showMessage(adminUserError.id, "❌ Other administrator accounts cannot be deleted from this panel for safety.", false);
+                    return;
+                }
+                // Replace window.confirm with a custom modal for better UX in a production app
+                if (window.confirm(`Are you sure you want to delete user ${userData.email || uid}? This removes them from the user list but does NOT delete their Firebase Auth account.`)) {
+                    deleteUserFromDatabase(uid, userData.email || uid);
                 }
             }
 
+            // Delete user from Realtime Database (users list)
             async function deleteUserFromDatabase(uid, email) {
                 showLoader();
                 try {
                     await usersDataRef.child(uid).remove();
-                    showMessage(adminUserSuccess.id, `User ${email} removed from database.`);
+                    showMessage(adminUserSuccess.id, `User ${email} removed from application database.`);
                     await logActivity('delete_user_db_success', { deletedUserUID: uid, email: email });
+                    // Note: This does not delete the Firebase Auth user. That requires Admin SDK server-side.
                 } catch (error) {
                     showMessage(adminUserError.id, `Error deleting user from DB: ${error.message}`, false);
                     await logActivity('delete_user_db_error', { targetUserUID: uid, error: error.message });
@@ -2489,8 +2676,8 @@
             // --- Admin Panel - Attendance Management ---
             if(loadMgmtAttendanceBtn) loadMgmtAttendanceBtn.addEventListener('click', async () => {
                 showLoader();
-                const startDate = mgmtAttStartDateInput.value;
-                const endDate = mgmtAttEndDateInput.value;
+                const startDate = mgmtAttStartDateInput.value; // YYYY-MM-DD
+                const endDate = mgmtAttEndDateInput.value;   // YYYY-MM-DD
                 const selectedClass = mgmtAttClassSelector.value;
 
                 if (!startDate || !endDate || !selectedClass) {
@@ -2502,67 +2689,75 @@
                     hideLoader(); return;
                 }
 
-                mgmtAttendanceTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>`;
+                if(mgmtAttendanceTableBody) mgmtAttendanceTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading attendance records...</td></tr>`;
                 try {
                     const attendanceRef = database.ref('attendance');
-                    // Querying by date range directly in Firebase RTDB is complex. Fetch all and filter client-side for simplicity here.
-                    // For large datasets, server-side filtering or Firestore would be better.
+                    // Firebase RTDB: Query by date range (key) and then filter by class client-side.
+                    // For very large datasets, Firestore with compound queries or server-side processing is better.
                     const snapshot = await attendanceRef.orderByKey().startAt(startDate).endAt(endDate).once('value');
                     const allDataForRange = snapshot.val() || {};
                     
                     let tableHTML = "";
                     let recordsFound = 0;
 
-                    Object.keys(allDataForRange).forEach(dateKey => {
+                    Object.keys(allDataForRange).sort().forEach(dateKey => { // Sort dates
+                        // Check if data for the selected class exists on this date
                         if (allDataForRange[dateKey][selectedClass]) {
-                            const classAttendance = allDataForRange[dateKey][selectedClass];
-                            const studentsInThisClass = allStudentNames[selectedClass] || {};
-                            const absentRollsOnDate = new Set((classAttendance.absentees || []).map(a => a.roll.toString()));
+                            const classAttendanceData = allDataForRange[dateKey][selectedClass];
+                            const studentsInThisClass = allStudentNames[selectedClass] || {}; // Get student names for this class
+                            const absentRollsOnDate = new Set((classAttendanceData.absentees || []).map(a => a.roll.toString()));
 
-                            Object.entries(studentsInThisClass).forEach(([roll, name]) => {
+                            // Iterate over all students of the selected class to show present/absent status
+                            Object.entries(studentsInThisClass).sort((a,b)=> parseInt(a[0]) - parseInt(b[0])).forEach(([roll, name]) => {
                                 recordsFound++;
                                 const isAbsent = absentRollsOnDate.has(roll);
                                 tableHTML += `
                                     <tr data-date="${dateKey}" data-class="${selectedClass}" data-roll="${roll}" data-name="${name}">
-                                        <td>${dateKey}</td>
-                                        <td>${selectedClass}</td>
+                                        <td>${dateKey.split('-').reverse().join('-')}</td> <!-- DD-MM-YYYY -->
+                                        <td>Class ${selectedClass}</td>
                                         <td>${roll}</td>
                                         <td>${name}</td>
-                                        <td>${isAbsent ? '<span class="status-indicator status-absent"></span>Absent' : '<span class="status-indicator status-present"></span>Present'}</td>
-                                        <td><button class="btn btn-primary btn-edit-attendance"><i class="fas fa-edit"></i> Edit</button></td>
+                                        <td><span class="status-indicator ${isAbsent ? 'status-absent' : 'status-present'}"></span>${isAbsent ? 'Absent' : 'Present'}</td>
+                                        <td><button class="btn btn-primary btn-sm btn-edit-attendance" title="Edit Status"><i class="fas fa-edit"></i> Edit</button></td>
                                     </tr>`;
                             });
                         }
                     });
-                    mgmtAttendanceTableBody.innerHTML = recordsFound > 0 ? tableHTML : `<tr><td colspan="6" style="text-align:center;">No records found for the selected criteria.</td></tr>`;
+                    if(mgmtAttendanceTableBody) mgmtAttendanceTableBody.innerHTML = recordsFound > 0 ? tableHTML : `<tr><td colspan="6" style="text-align:center;">No attendance records found for the selected criteria.</td></tr>`;
                     
-                    // Add event listeners to new edit buttons
-                    mgmtAttendanceTableBody.querySelectorAll('.btn-edit-attendance').forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            const row = e.target.closest('tr');
-                            currentEditingAttendanceRecord = {
-                                date: row.dataset.date,
-                                class: row.dataset.class,
-                                roll: row.dataset.roll,
-                                name: row.dataset.name,
-                                currentStatus: row.cells[4].textContent.trim().toLowerCase() // "absent" or "present"
-                            };
-                            editAttendanceStudentInfo.textContent = `${currentEditingAttendanceRecord.name} (Roll: ${currentEditingAttendanceRecord.roll})`;
-                            editAttendanceDateInfo.textContent = currentEditingAttendanceRecord.date;
-                            editAttendanceClassInfo.textContent = currentEditingAttendanceRecord.class;
-                            editAttendanceStatusSelect.value = currentEditingAttendanceRecord.currentStatus.includes('absent') ? 'absent' : 'present';
-                            editAttendanceModal.style.display = 'flex';
+                    // Add event listeners to the newly created edit buttons
+                    if(mgmtAttendanceTableBody) {
+                        mgmtAttendanceTableBody.querySelectorAll('.btn-edit-attendance').forEach(button => {
+                            button.addEventListener('click', (e) => {
+                                const row = e.target.closest('tr');
+                                if (!row || !row.dataset) return;
+                                currentEditingAttendanceRecord = {
+                                    date: row.dataset.date,       // YYYY-MM-DD
+                                    class: row.dataset.class,
+                                    roll: row.dataset.roll,
+                                    name: row.dataset.name,
+                                    // Determine current status from cell text content robustly
+                                    currentStatus: row.cells[4].textContent.toLowerCase().includes('absent') ? 'absent' : 'present'
+                                };
+                                if(editAttendanceStudentInfo) editAttendanceStudentInfo.textContent = `${currentEditingAttendanceRecord.name} (Roll: ${currentEditingAttendanceRecord.roll})`;
+                                if(editAttendanceDateInfo) editAttendanceDateInfo.textContent = currentEditingAttendanceRecord.date.split('-').reverse().join('-'); // DD-MM-YYYY
+                                if(editAttendanceClassInfo) editAttendanceClassInfo.textContent = currentEditingAttendanceRecord.class;
+                                if(editAttendanceStatusSelect) editAttendanceStatusSelect.value = currentEditingAttendanceRecord.currentStatus;
+                                if(editAttendanceModal) editAttendanceModal.style.display = 'flex';
+                            });
                         });
-                    });
+                    }
+                    showMessage(mgmtAttendanceSuccess.id, `Found ${recordsFound} attendance entries.`);
                     await logActivity('load_mgmt_attendance', { startDate, endDate, class: selectedClass, recordsFound });
 
                 } catch (error) {
                     showMessage(mgmtAttendanceError.id, `Error loading attendance records: ${error.message}`, false);
-                     await logActivity('load_mgmt_attendance_error', { error: error.message });
+                     await logActivity('load_mgmt_attendance_error', { startDate, endDate, class: selectedClass, error: error.message });
                 }
                 hideLoader();
             });
 
+            // Save changes to an attendance record from the modal
             if(saveAttendanceChangeBtn) saveAttendanceChangeBtn.addEventListener('click', async () => {
                 if (!currentEditingAttendanceRecord) return;
                 showLoader();
@@ -2572,54 +2767,66 @@
                 try {
                     const dayAttendanceRef = database.ref(`attendance/${date}/${className}`);
                     const snapshot = await dayAttendanceRef.once('value');
-                    let dayData = snapshot.val() || { date: date, class: className, absentees: [] };
+                    let dayData = snapshot.val();
+
+                    if (!dayData) { // Should not happen if editing existing, but as a safeguard
+                        dayData = { date: date, class: className, absentees: [] };
+                    }
                     dayData.absentees = dayData.absentees || [];
 
-                    const studentIndex = dayData.absentees.findIndex(s => s.roll.toString() === roll);
+                    const studentIndexInAbsentees = dayData.absentees.findIndex(s => s.roll.toString() === roll);
 
                     if (newStatus === 'absent') {
-                        if (studentIndex === -1) { // If not already absent, add
+                        if (studentIndexInAbsentees === -1) { // If student was present and now marked absent, add to list
                             dayData.absentees.push({ roll: roll, name: name });
                         }
-                    } else { // present
-                        if (studentIndex !== -1) { // If was absent, remove
-                            dayData.absentees.splice(studentIndex, 1);
+                    } else { // newStatus is 'present'
+                        if (studentIndexInAbsentees !== -1) { // If student was absent and now marked present, remove from list
+                            dayData.absentees.splice(studentIndexInAbsentees, 1);
                         }
                     }
-                    dayData.lastEditedBy = currentUser.uid;
+                    // Add audit trail for edit
+                    dayData.lastEditedByUID = currentUser.uid;
+                    dayData.lastEditedByName = userDisplayName;
                     dayData.lastEditedAt = firebase.database.ServerValue.TIMESTAMP;
 
                     await dayAttendanceRef.set(dayData);
-                    showMessage(editAttendanceSuccess.id, `Attendance for ${name} on ${date} updated to ${newStatus}.`);
+                    showMessage(editAttendanceSuccess.id, `Attendance for ${name} on ${date.split('-').reverse().join('-')} updated to ${newStatus}.`);
                     await logActivity('edit_attendance_record_success', { date, class: className, roll, name, newStatus });
-                    editAttendanceModal.style.display = 'none';
-                    loadMgmtAttendanceBtn.click(); // Refresh the table
+                    if(editAttendanceModal) editAttendanceModal.style.display = 'none';
+                    if(loadMgmtAttendanceBtn) loadMgmtAttendanceBtn.click(); // Refresh the table to show changes
                 } catch (error) {
                     showMessage(editAttendanceError.id, `Error updating attendance: ${error.message}`, false);
-                    await logActivity('edit_attendance_record_error', { date, class: className, roll, name, error: error.message });
+                    await logActivity('edit_attendance_record_error', { date, class: className, roll, name, newStatus, error: error.message });
                 }
                 hideLoader();
             });
             
+            // Save attendance settings (e.g., global start date)
             if(saveAttendanceSettingsBtn) saveAttendanceSettingsBtn.addEventListener('click', async () => {
                 showLoader();
-                const startDate = attendanceStartDateSettingInput.value;
-                if (!startDate) {
-                    showMessage(attendanceSettingsError.id, "Please select a starting date.", false);
+                const startDateSetting = attendanceStartDateSettingInput.value;
+                if (!startDateSetting) {
+                    showMessage(attendanceSettingsError.id, "Please select a valid starting date for attendance data.", false);
                     hideLoader(); return;
                 }
                 try {
-                    await database.ref('settings/attendanceConfiguration').update({ globalAttendanceStartDate: startDate, lastSetBy: currentUser.uid, lastSetAt: firebase.database.ServerValue.TIMESTAMP });
-                    showMessage(attendanceSettingsSuccess.id, "Attendance starting date saved.");
-                    await logActivity('save_attendance_setting', { setting: 'globalAttendanceStartDate', value: startDate });
+                    await database.ref('settings/attendanceConfiguration').update({ 
+                        globalAttendanceStartDate: startDateSetting, 
+                        lastSetByUID: currentUser.uid,
+                        lastSetByName: userDisplayName,
+                        lastSetAt: firebase.database.ServerValue.TIMESTAMP 
+                    });
+                    showMessage(attendanceSettingsSuccess.id, "Attendance data starting date setting saved.");
+                    await logActivity('save_attendance_setting', { setting: 'globalAttendanceStartDate', value: startDateSetting });
                 } catch (error) {
-                    showMessage(attendanceSettingsError.id, `Error saving setting: ${error.message}`, false);
+                    showMessage(attendanceSettingsError.id, `Error saving attendance setting: ${error.message}`, false);
                     await logActivity('save_attendance_setting_error', { error: error.message });
                 }
                 hideLoader();
             });
             
-
+            // Load attendance settings on page load
             async function loadAttendanceSettings() {
                 try {
                     const snapshot = await database.ref('settings/attendanceConfiguration/globalAttendanceStartDate').once('value');
@@ -2633,8 +2840,8 @@
             // --- Admin Panel - Activity Logs ---
             if(loadActivityLogsBtn) loadActivityLogsBtn.addEventListener('click', async () => {
                 showLoader();
-                const startDate = logStartDateInput.value;
-                const endDate = logEndDateInput.value;
+                const startDate = logStartDateInput.value; // YYYY-MM-DD
+                const endDate = logEndDateInput.value;   // YYYY-MM-DD
                 const userEmailFilter = logUserEmailInput.value.trim().toLowerCase();
                 const actionTypeFilter = logActionTypeInput.value.trim().toLowerCase();
 
@@ -2643,50 +2850,56 @@
                     hideLoader(); return;
                 }
                 if (new Date(startDate) > new Date(endDate)) {
-                    showMessage(activityLogError.id, "Start date cannot be after end date.", false);
+                    showMessage(activityLogError.id, "Start date cannot be after end date for logs.", false);
                     hideLoader(); return;
                 }
                 
-                activityLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Loading logs...</td></tr>`;
+                if(activityLogsTableBody) activityLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Loading activity logs...</td></tr>`;
                 try {
-                    // Firebase RTDB does not support complex multi-field filtering efficiently client-side for large datasets.
-                    // We'll fetch by timestamp range and then filter other fields client-side.
-                    // For production with many logs, consider Firestore or server-side processing/indexing.
                     const logsRef = database.ref('activityLogs');
-                    // Convert dates to timestamps for comparison if needed, or use string comparison if dates are YYYY-MM-DD
-                    // For server timestamps, we'd need to query by child 'timestamp'.
-                    // Here, we'll fetch all and filter. This is NOT scalable for many logs.
-                    const snapshot = await logsRef.orderByChild('timestamp').once('value'); // Fetch all, then filter
-                    const allLogs = snapshot.val() || {};
+                    // Convert dates to timestamps for Firebase RTDB query by 'timestamp' child.
+                    // Note: Firebase RTDB works best with single orderByChild. Multiple filters are client-side.
+                    const startTimestamp = new Date(startDate).getTime();
+                    const endTimestamp = new Date(endDate).setHours(23, 59, 59, 999); // Include whole end day
+
+                    const snapshot = await logsRef.orderByChild('timestamp').startAt(startTimestamp).endAt(endTimestamp).once('value');
+                    const allLogsInRange = snapshot.val() || {};
                     
                     let tableHTML = "";
                     let logsFound = 0;
-                    const startTimestamp = new Date(startDate).getTime();
-                    const endTimestamp = new Date(endDate).setHours(23, 59, 59, 999); // End of day
-
-                    Object.values(allLogs).filter(log => {
-                        if (!log.timestamp || log.timestamp < startTimestamp || log.timestamp > endTimestamp) return false;
+                    
+                    // Client-side filtering for userEmail and actionType
+                    Object.values(allLogsInRange).filter(log => {
                         if (userEmailFilter && (!log.userEmail || !log.userEmail.toLowerCase().includes(userEmailFilter))) return false;
                         if (actionTypeFilter && (!log.action || !log.action.toLowerCase().includes(actionTypeFilter))) return false;
                         return true;
-                    }).sort((a,b) => b.timestamp - a.timestamp) // Sort newest first
+                    }).sort((a,b) => b.timestamp - a.timestamp) // Sort newest first (descending timestamp)
                       .forEach(log => {
                         logsFound++;
-                        const logDate = new Date(log.timestamp).toLocaleString();
+                        const logDate = new Date(log.timestamp).toLocaleString(); // Human-readable date/time
+                        let detailsString = 'N/A';
+                        if (log.details) {
+                            try {
+                                detailsString = JSON.stringify(log.details);
+                                if (detailsString.length > 100) detailsString = detailsString.substring(0, 100) + '...';
+                            } catch (e) { detailsString = 'Error parsing details'; }
+                        }
+
                         tableHTML += `
                             <tr>
                                 <td>${logDate}</td>
-                                <td>${log.userName || log.userEmail || 'N/A'}</td>
-                                <td>${log.action}</td>
-                                <td>${log.details ? JSON.stringify(log.details, null, 2).substring(0, 100) + (JSON.stringify(log.details).length > 100 ? '...' : '') : 'N/A'}</td>
+                                <td>${log.userName || log.userEmail || 'System/Unknown'}</td>
+                                <td>${log.action || 'N/A'}</td>
+                                <td title="${log.details ? JSON.stringify(log.details, null, 2) : ''}">${detailsString}</td>
                             </tr>`;
                     });
 
-                    activityLogsTableBody.innerHTML = logsFound > 0 ? tableHTML : `<tr><td colspan="4" style="text-align:center;">No logs found for the selected criteria.</td></tr>`;
+                    if(activityLogsTableBody) activityLogsTableBody.innerHTML = logsFound > 0 ? tableHTML : `<tr><td colspan="4" style="text-align:center;">No activity logs found for the selected criteria.</td></tr>`;
+                    showMessage(activityLogError.id, `Found ${logsFound} log entries.`, true); // Use error element for general messages too
                     await logActivity('load_activity_logs_view', { startDate, endDate, userFilter: userEmailFilter, actionFilter: actionTypeFilter, logsFound });
                 } catch (error) {
                     showMessage(activityLogError.id, `Error loading activity logs: ${error.message}`, false);
-                     await logActivity('load_activity_logs_error', { error: error.message });
+                     await logActivity('load_activity_logs_error', { startDate, endDate, error: error.message });
                 }
                 hideLoader();
             });
@@ -2694,30 +2907,27 @@
             // --- Admin Panel - System Settings ---
             if(saveSystemSettingsBtn) saveSystemSettingsBtn.addEventListener('click', async () => {
                 showLoader();
-                const settings = {
-                    schoolName: systemNameInput.value,
-                    logoUrl: logoUrlInput.value,
+                const settingsToSave = {
+                    schoolName: systemNameInput ? systemNameInput.value : 'AbsentEase Academy',
+                    logoUrl: logoUrlInput ? logoUrlInput.value : 'https://cdn.imgchest.com/files/7mmc9jrkvv7.png',
                     notifications: {
-                        email: emailNotificationsSettingCheckbox.checked,
-                        inApp: inAppNotificationsSettingCheckbox.checked
+                        email: emailNotificationsSettingCheckbox ? emailNotificationsSettingCheckbox.checked : true,
+                        inApp: inAppNotificationsSettingCheckbox ? inAppNotificationsSettingCheckbox.checked : true
                     },
-                    lastUpdatedBy: currentUser.uid,
+                    lastUpdatedByUID: currentUser.uid,
+                    lastUpdatedByName: userDisplayName,
                     lastUpdatedAt: firebase.database.ServerValue.TIMESTAMP
                 };
                 try {
-                    await database.ref('settings/systemConfiguration').update(settings);
+                    await database.ref('settings/systemConfiguration').update(settingsToSave);
                     showMessage(systemSettingsSuccess.id, "System settings saved successfully.");
-                    await logActivity('save_system_settings_success', settings);
-                    // Update live elements if necessary (e.g., logo on current page)
-                    document.querySelectorAll('#header-logo, #attendance-header-logo, #admin-header-logo').forEach(logo => {
-                        if(logo) logo.src = settings.logoUrl;
+                    await logActivity('save_system_settings_success', settingsToSave);
+                    // Apply live updates to UI if applicable
+                    document.querySelectorAll('#header-logo, #attendance-header-logo, #admin-header-logo').forEach(logoEl => {
+                        if(logoEl && settingsToSave.logoUrl) logoEl.src = settingsToSave.logoUrl;
                     });
-                    document.querySelectorAll('h1').forEach(title => { // Simplistic title update, might need refinement
-                        if(title.textContent.includes("AbsentEase") && systemNameInput.value) {
-                            // This is a bit broad, might update more than intended.
-                            // A more specific selector or logic would be better if titles vary.
-                        }
-                    });
+                    // Update app title in header (if a specific element is targeted for it)
+                    // document.getElementById('app-main-title-display').textContent = settingsToSave.schoolName;
 
                 } catch (error) {
                     showMessage(systemSettingsError.id, `Error saving system settings: ${error.message}`, false);
@@ -2728,16 +2938,17 @@
             
             if(saveSecuritySettingsBtn) saveSecuritySettingsBtn.addEventListener('click', async () => {
                 showLoader();
-                const settings = {
-                    passwordPolicy: passwordPolicySelect.value,
-                    sessionTimeoutMinutes: parseInt(sessionTimeoutSelect.value),
-                    lastUpdatedBy: currentUser.uid,
+                const securitySettingsToSave = {
+                    passwordPolicy: passwordPolicySelect ? passwordPolicySelect.value : 'medium',
+                    sessionTimeoutMinutes: sessionTimeoutSelect ? parseInt(sessionTimeoutSelect.value) : 30,
+                    lastUpdatedByUID: currentUser.uid,
+                    lastUpdatedByName: userDisplayName,
                     lastUpdatedAt: firebase.database.ServerValue.TIMESTAMP
                 };
                 try {
-                    await database.ref('settings/securityConfiguration').update(settings);
+                    await database.ref('settings/securityConfiguration').update(securitySettingsToSave);
                     showMessage(securitySettingsSuccess.id, "Security settings saved successfully.");
-                    await logActivity('save_security_settings_success', settings);
+                    await logActivity('save_security_settings_success', securitySettingsToSave);
                 } catch (error) {
                     showMessage(securitySettingsError.id, `Error saving security settings: ${error.message}`, false);
                     await logActivity('save_security_settings_error', { error: error.message });
@@ -2745,262 +2956,342 @@
                 hideLoader();
             });
 
+            // Load system and security settings on page load
             async function loadSystemSettings() {
                 try {
                     const sysConfigSnap = await database.ref('settings/systemConfiguration').once('value');
                     if (sysConfigSnap.exists()) {
                         const config = sysConfigSnap.val();
-                        if(systemNameInput) systemNameInput.value = config.schoolName || 'AbsentEase Academy';
-                        if(logoUrlInput) logoUrlInput.value = config.logoUrl || 'https://cdn.imgchest.com/files/7mmc9jrkvv7.png';
-                        if(emailNotificationsSettingCheckbox && config.notifications) emailNotificationsSettingCheckbox.checked = config.notifications.email !== false; // Default true
-                        if(inAppNotificationsSettingCheckbox && config.notifications) inAppNotificationsSettingCheckbox.checked = config.notifications.inApp !== false; // Default true
-                        // Apply logo immediately
-                         document.querySelectorAll('#header-logo, #attendance-header-logo, #admin-header-logo').forEach(logo => {
-                            if(logo && config.logoUrl) logo.src = config.logoUrl;
+                        if(systemNameInput && config.schoolName) systemNameInput.value = config.schoolName;
+                        if(logoUrlInput && config.logoUrl) logoUrlInput.value = config.logoUrl;
+                        if(emailNotificationsSettingCheckbox && config.notifications && typeof config.notifications.email === 'boolean') emailNotificationsSettingCheckbox.checked = config.notifications.email;
+                        if(inAppNotificationsSettingCheckbox && config.notifications && typeof config.notifications.inApp === 'boolean') inAppNotificationsSettingCheckbox.checked = config.notifications.inApp;
+                        // Apply logo immediately to all relevant logo image elements
+                         document.querySelectorAll('#header-logo, #attendance-header-logo, #admin-header-logo').forEach(logoEl => {
+                            if(logoEl && config.logoUrl) logoEl.src = config.logoUrl;
                         });
                     }
                     const secConfigSnap = await database.ref('settings/securityConfiguration').once('value');
                      if (secConfigSnap.exists()) {
                         const config = secConfigSnap.val();
-                        if(passwordPolicySelect) passwordPolicySelect.value = config.passwordPolicy || 'medium';
-                        if(sessionTimeoutSelect) sessionTimeoutSelect.value = config.sessionTimeoutMinutes !== undefined ? config.sessionTimeoutMinutes.toString() : '30';
+                        if(passwordPolicySelect && config.passwordPolicy) passwordPolicySelect.value = config.passwordPolicy;
+                        if(sessionTimeoutSelect && config.sessionTimeoutMinutes !== undefined) sessionTimeoutSelect.value = config.sessionTimeoutMinutes.toString();
                     }
                 } catch (error) {
-                    console.error("Error loading system settings:", error);
+                    console.error("Error loading system/security settings:", error);
+                    // Optionally show a non-critical error message to admin if settings load fails
+                    if (userRole === 'administrator' && systemSettingsError) {
+                         showMessage(systemSettingsError.id, "Could not load all system settings.", false);
+                    }
                 }
+            }
+            
+            // --- Device Management Functions (Admin Panel) ---
+            async function loadDeviceSettings() {
+                try {
+                    const snapshot = await database.ref('settings/deviceConfiguration/maxDevicesPerUser').once('value');
+                    if (snapshot.exists() && maxDevicesInput) {
+                        maxDevicesInput.value = snapshot.val();
+                    } else if (maxDevicesInput) {
+                        maxDevicesInput.value = 3; // Default if not set
+                    }
+                } catch (error) {
+                    console.error("Error loading device settings:", error);
+                    if(userRole === 'administrator' && document.getElementById('device-settings-error')) {
+                        showMessage('device-settings-error', "Could not load max device setting.", false);
+                    }
+                }
+            }
+
+            function setupDeviceManagementListeners() {
+                if (saveDeviceSettingsBtn) {
+                    saveDeviceSettingsBtn.addEventListener('click', async () => {
+                        showLoader();
+                        const maxDevices = maxDevicesInput ? parseInt(maxDevicesInput.value) : 3;
+                        if (isNaN(maxDevices) || maxDevices < 1 || maxDevices > 10) {
+                            showMessage('device-settings-error', "Max devices must be a number between 1 and 10.", false);
+                            hideLoader(); return;
+                        }
+                        try {
+                            await database.ref('settings/deviceConfiguration').update({ 
+                                maxDevicesPerUser: maxDevices,
+                                lastUpdatedByUID: currentUser.uid,
+                                lastUpdatedByName: userDisplayName,
+                                lastUpdatedAt: firebase.database.ServerValue.TIMESTAMP
+                            });
+                            showMessage('device-settings-success', `Max devices per user set to ${maxDevices}.`);
+                            await logActivity('save_device_settings', { maxDevices: maxDevices });
+                        } catch (error) {
+                            showMessage('device-settings-error', `Error saving device settings: ${error.message}`, false);
+                            await logActivity('save_device_settings_error', { error: error.message });
+                        }
+                        hideLoader();
+                    });
+                }
+                if (deviceUserFilterInput) {
+                     deviceUserFilterInput.addEventListener('input', () => loadAndDisplayUserDevices(deviceUserFilterInput.value.trim().toLowerCase()));
+                }
+            }
+            
+            async function loadAndDisplayUserDevices(filter = '') {
+                 if (!userDevicesListContainer || userRole !== 'administrator') return;
+                showLoader();
+                userDevicesListContainer.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading devices...</td></tr>'; // Use table row for consistency if it's a table
+                
+                try {
+                    const devicesSnapshot = await database.ref('devices').once('value');
+                    const allUserDevices = devicesSnapshot.val() || {};
+                    const usersSnapshot = await database.ref('users').once('value'); // For getting user names
+                    const usersData = usersSnapshot.val() || {};
+
+                    let tableContent = '';
+                    let devicesFound = 0;
+                    const detector = new DeviceDetector();
+
+                    for (const userId in allUserDevices) {
+                        const userEmail = usersData[userId] ? usersData[userId].email : 'Unknown User';
+                        const userName = usersData[userId] ? usersData[userId].name : userId;
+
+                        if (filter && !userEmail.toLowerCase().includes(filter) && !userName.toLowerCase().includes(filter)) {
+                            continue; // Skip if filter doesn't match email or name
+                        }
+
+                        const devices = allUserDevices[userId];
+                        for (const deviceKey in devices) {
+                            devicesFound++;
+                            const device = devices[deviceKey];
+                            const parsedUA = detector.parse(device.userAgent || "");
+                            const deviceType = parsedUA.device?.type || 'Unknown';
+                            const browser = parsedUA.client?.name || 'Unknown';
+                            const os = parsedUA.os?.name || 'Unknown';
+                            const loginDate = device.date ? new Date(device.date).toLocaleDateString() : 'N/A';
+                            
+                            // Assuming userDevicesListContainer is a <tbody>
+                            tableContent += `
+                                <tr>
+                                    <td>${userEmail} (${userName})</td>
+                                    <td>${deviceType}</td>
+                                    <td>${browser}</td>
+                                    <td>${os}</td>
+                                    <td>${loginDate}</td>
+                                    <td><button class="btn btn-danger btn-sm btn-remove-device" data-user-id="${userId}" data-device-key="${deviceKey}"><i class="fas fa-trash"></i> Remove</button></td>
+                                </tr>
+                            `;
+                        }
+                    }
+                    userDevicesListContainer.innerHTML = devicesFound > 0 ? tableContent : '<tr><td colspan="6" style="text-align:center;">No devices found matching filter or no devices registered.</td></tr>';
+                    
+                    // Add event listeners to new remove buttons
+                    userDevicesListContainer.querySelectorAll('.btn-remove-device').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const targetButton = e.currentTarget; // Use currentTarget for delegated events
+                            const userId = targetButton.dataset.userId;
+                            const deviceKey = targetButton.dataset.deviceKey;
+                            confirmRemoveDevice(userId, deviceKey);
+                        });
+                    });
+
+                } catch (error) {
+                    console.error("Error loading user devices:", error);
+                    userDevicesListContainer.innerHTML = '<tr><td colspan="6" style="text-align:center;">Error loading devices.</td></tr>';
+                    showMessage('device-settings-error', `Error loading devices: ${error.message}`, false);
+                }
+                hideLoader();
+            }
+
+            function confirmRemoveDevice(userId, deviceKey) {
+                // Use a custom modal in a real app
+                if (window.confirm(`Are you sure you want to remove this device for user ${userId}?`)) {
+                    removeUserDevice(userId, deviceKey);
+                }
+            }
+
+            async function removeUserDevice(userId, deviceKey) {
+                showLoader();
+                try {
+                    await database.ref(`devices/${userId}/${deviceKey}`).remove();
+                    showMessage('device-settings-success', "Device removed successfully.");
+                    await logActivity('remove_device_success', { removedDeviceForUser: userId, deviceKey: deviceKey });
+                    loadAndDisplayUserDevices(deviceUserFilterInput ? deviceUserFilterInput.value.trim().toLowerCase() : ''); // Refresh list
+                } catch (error) {
+                    showMessage('device-settings-error', `Error removing device: ${error.message}`, false);
+                    await logActivity('remove_device_error', { error: error.message });
+                }
+                hideLoader();
             }
             
             // --- Initialize App ---
             initializeApp();
-            // Add this to initializeApp() function
-setupAttendanceTabs();
 
-function setupAttendanceTabs() {
-    const attendanceTabs = document.querySelectorAll('#attendance-screen .tabs .tab');
-    const attendanceTabContents = document.querySelectorAll('#attendance-screen .tab-content');
-    
-    attendanceTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active classes
-            attendanceTabs.forEach(t => t.classList.remove('active'));
-            attendanceTabContents.forEach(c => c.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            tab.classList.add('active');
-            
-            // Show corresponding content
-            const tabId = tab.getAttribute('data-tab');
-            document.getElementById(`${tabId}-tab`).classList.add('active');
-        });
-    });
-}
-        });
+        }); // End of DOMContentLoaded
         
-        // Function to get device and browser details
-function getDeviceDetails() {
-    return {
-        deviceType: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
-        browser: navigator.userAgentData?.brands?.[0]?.brand || 'Unknown',
-        os: navigator.userAgentData?.platform || 'Unknown',
-        screen: `${window.screen.width}x${window.screen.height}`,
-        time: new Date().toISOString()
-    };
-}
-
-// Updated login handler
-loginBtn.addEventListener("click", () => {
-    const deviceDetails = getDeviceDetails();
-    // ... existing login code
-    then(async (userCredential) => { 
-        await logActivity('login_success', { 
-            email: email,
-            device: deviceDetails
-        });
-    })
-});
-
-// Updated logout handler
-function handleLogoutAction() {
-    const deviceDetails = getDeviceDetails();
-    // ... existing logout code
-    then(async () => {
-        await logActivity('logout', {
-            email: emailBeforeLogout,
-            device: deviceDetails
-        });
-    })
-}
+        // --- Helper function to get device details (browser, OS, etc.) ---
+        function getDeviceDetails() {
+            // Using DeviceDetector.js if loaded, otherwise basic navigator info
+            if (typeof DeviceDetector !== 'undefined') {
+                const detector = new DeviceDetector();
+                const uaInfo = detector.parse(navigator.userAgent);
+                return {
+                    deviceType: uaInfo.device?.type || 'Unknown',
+                    browser: uaInfo.client?.name || 'Unknown',
+                    os: uaInfo.os?.name || 'Unknown',
+                    userAgent: navigator.userAgent.substring(0, 250) // Truncate long UAs
+                };
+            }
+            // Fallback if DeviceDetector is not available
+            return {
+                deviceType: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+                browser: 'Could not detect precisely',
+                os: navigator.platform || 'Unknown',
+                userAgent: navigator.userAgent.substring(0, 250)
+            };
+        }
         
     </script>
-    <!-- PDF export logic to be added at the bottom of your HTML, just before </body> -->
-<!-- PDF export logic to be added at the bottom of your HTML, just before </body> -->
-<!-- PDF export logic to be added at the bottom of your HTML, just before </body> -->
+    <!-- PDF export logic (ensure jspdf and autotable are loaded before this) -->
 <script>
-  function formatDateToDDMMYYYY(timestamp) {
-    const now = new Date(timestamp);
-    const dd = String(now.getDate()).padStart(2, '0');
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const yyyy = now.getFullYear();
+  // Helper function to format date as DD-MM-YYYY
+  function formatDateToDDMMYYYY(dateStringOrTimestamp) {
+    const date = new Date(dateStringOrTimestamp); // Handles both YYYY-MM-DD and timestamps
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const yyyy = date.getFullYear();
     return `${dd}-${mm}-${yyyy}`;
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    if (window.jspdf && window.jspdf.jsPDF) {
+    // Check if jsPDF and autoTable plugin are loaded
+    if (typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF === 'function' && typeof window.jspdf.jsPDF.autoTable === 'function') {
       const { jsPDF } = window.jspdf;
 
-      const classBtn = document.getElementById("download-class-attendance-pdf");
-      const individualBtn = document.getElementById("download-individual-attendance-pdf");
+      const downloadClassPdfBtn = document.getElementById("download-class-attendance-pdf");
+      const downloadIndividualPdfBtn = document.getElementById("download-individual-attendance-pdf");
 
-      const getFormattedDate = () => {
+      // Function to get a nicely formatted current date and day
+      const getFormattedCurrentDateForPdfHeader = () => {
         const now = new Date();
-        const day = now.toLocaleString('en-US', { weekday: 'long' });
-        return `${day}, ${formatDateToDDMMYYYY(now)}`;
+        const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+        return `${dayName}, ${formatDateToDDMMYYYY(now)}`; // Uses DD-MM-YYYY
       };
 
-      const getCurrentClassName = () => {
-        const select = document.getElementById("attendance-class-selector");
-        return select?.options[select.selectedIndex]?.value || "Class";
+      // Get selected class name for PDF header
+      const getCurrentClassNameForPdf = () => {
+        const classSelect = document.getElementById("attendance-class-selector"); // Assuming this ID for class selector on attendance page
+        return classSelect?.options[classSelect.selectedIndex]?.text || "Selected Class"; // Use .text for "Class X"
       };
-
-      const getClassTeacherName = (className) => {
-        const classTeachers = {
-          "A2": "Julie Vargheese",
-          "B2": "Deepti",
-          "C2": "Harin SK",
-          "D2": "Anulekshmi V"
+      
+      // Mock function for class teacher - replace with actual data source if available
+      const getClassTeacherName = (classNameText) => {
+        // Example: "Class A2" -> "A2"
+        const classCode = classNameText.replace("Class ", "").trim(); 
+        const classTeachers = { /* This should be populated from your data or settings */
+          "A2": "Ms. Julie Vargheese", "B2": "Ms. Deepti", "C2": "Mr. Harin SK", "D2": "Ms. Anulekshmi V"
+          // Add more mappings as needed
         };
-        return classTeachers[className] || "NIL";
+        return classTeachers[classCode] || "N/A"; 
       };
 
-      if (classBtn) {
-        classBtn.addEventListener("click", () => {
+      // Event listener for Class Attendance PDF download
+      if (downloadClassPdfBtn) {
+        downloadClassPdfBtn.addEventListener("click", () => {
           const doc = new jsPDF();
-          const table = document.querySelector("#attendance-table-body")?.closest("table");
-          if (!table) return alert("Attendance table not found");
+          const attendanceTable = document.querySelector("#attendance-table-body")?.closest("table");
+          if (!attendanceTable) {
+            alert("Class attendance table not found. Please load attendance data first.");
+            return;
+          }
 
-          const className = getCurrentClassName();
-          const teacherName = getClassTeacherName(className);
+          const selectedClassName = getCurrentClassNameForPdf();
+          const teacherName = getClassTeacherName(selectedClassName);
+          const reportDate = document.getElementById('date-selector')?.value; // YYYY-MM-DD
+          const displayDate = reportDate ? formatDateToDDMMYYYY(reportDate) : getFormattedCurrentDateForPdfHeader();
 
+
+          doc.setFontSize(16);
           doc.text("Class Attendance Report", 14, 16);
-          doc.text(getFormattedDate(), 14, 26);
-          doc.text(`Class: ${className}`, 14, 36);
-          doc.text(`Class Teacher: ${teacherName}`, 14, 46);
-          doc.autoTable({ html: table, startY: 52 });
-          doc.save("class-attendance.pdf");
+          doc.setFontSize(11);
+          doc.text(`Date: ${displayDate}`, 14, 26);
+          doc.text(`Class: ${selectedClassName}`, 14, 32);
+          doc.text(`Class Teacher: ${teacherName}`, 14, 38);
+          
+          // Use autoTable to draw the table from HTML
+          doc.autoTable({ 
+            html: attendanceTable, 
+            startY: 45,
+            headStyles: { fillColor: [40, 55, 81] }, // Example: var(--primary)
+            theme: 'grid'
+          });
+          doc.save(`class_attendance_${selectedClassName.replace(/\s+/g, '_')}_${displayDate.replace(/-/g, '')}.pdf`);
         });
       }
 
-      if (individualBtn) {
-        individualBtn.addEventListener("click", () => {
+      // Event listener for Individual Attendance PDF download
+      if (downloadIndividualPdfBtn) {
+        downloadIndividualPdfBtn.addEventListener("click", () => {
           const doc = new jsPDF();
-          const name = document.getElementById("student-name-display")?.innerText || "Student";
-          const table = document.querySelector("#student-attendance-body")?.closest("table");
-          if (!table) return alert("Student attendance table not found");
+          const studentNameFull = document.getElementById("student-name-display")?.innerText || "Student"; // e.g., "Student Name (Roll: X, Class: Y)"
+          const studentAttendanceTable = document.querySelector("#student-attendance-body")?.closest("table");
+          if (!studentAttendanceTable) {
+            alert("Student attendance records table not found. Please load records first.");
+            return;
+          }
 
-          doc.text(`Attendance Report for ${name}`, 14, 16);
-          doc.text(getFormattedDate(), 14, 26);
-          doc.autoTable({ html: table, startY: 32 });
-          doc.save(`${name.replace(/\s+/g, '_').toLowerCase()}_attendance.pdf`);
+          doc.setFontSize(16);
+          doc.text(`Attendance Report for ${studentNameFull}`, 14, 16);
+          doc.setFontSize(11);
+          doc.text(`Report Generated: ${getFormattedCurrentDateForPdfHeader()}`, 14, 26);
+          
+          doc.autoTable({ 
+            html: studentAttendanceTable, 
+            startY: 35,
+            headStyles: { fillColor: [40, 55, 81] },
+            theme: 'grid'
+          });
+          doc.save(`${studentNameFull.split('(')[0].trim().replace(/\s+/g, '_').toLowerCase()}_attendance_history.pdf`);
         });
       }
     } else {
-      console.error("jsPDF or jsPDF.autoTable not loaded properly.");
+      console.warn("jsPDF or jsPDF.autoTable is not loaded. PDF export functionality will be unavailable.");
+      // Optionally, disable PDF buttons if libraries aren't loaded
+      document.querySelectorAll("#download-class-attendance-pdf, #download-individual-attendance-pdf").forEach(btn => {
+        if(btn) {
+            btn.disabled = true;
+            btn.title = "PDF library not loaded.";
+        }
+      });
     }
 
-    // Logout confirmation
-    const logoutButtons = [
+    // Re-attach logout confirmation if buttons exist (ensure this runs after main script might have set up its listeners)
+    // This can be tricky with load order. Consider a single point of attachment or event delegation.
+    // For simplicity, this assumes the buttons are present at DOMContentLoaded.
+    const allLogoutButtons = [
       document.getElementById("logout-btn"),
       document.getElementById("attendance-logout-btn"),
       document.getElementById("admin-logout-btn")
-    ];
+    ].filter(btn => btn); // Filter out nulls
 
-    logoutButtons.forEach(btn => {
-      if (btn) {
+    allLogoutButtons.forEach(btn => {
+        // Clone and replace to remove any previously attached listeners to avoid multiple confirms or actions.
+        // This is a bit heavy-handed; a more refined approach would be to manage listener attachment carefully.
         const clone = btn.cloneNode(true);
-        btn.parentNode.replaceChild(clone, btn); // remove existing listeners
+        btn.parentNode.replaceChild(clone, btn); 
+        
         clone.addEventListener("click", (e) => {
-          e.preventDefault();
-          const confirmed = confirm("Are you sure you want to logout?");
-          if (confirmed) {
-            if (firebase && firebase.auth) {
-              firebase.auth().signOut();
+          e.preventDefault(); // Prevent default action if it's a link or form button
+          // Use a custom modal for confirmation in a real app instead of window.confirm
+          if (window.confirm("Are you sure you want to logout?")) {
+            if (firebase && firebase.auth && typeof firebase.auth === 'function') { // Check if Firebase auth is available
+              firebase.auth().signOut().catch(error => {
+                  console.error("Error during logout:", error);
+                  // Show error message to user via custom modal or message display
+              });
+            } else {
+                console.error("Firebase auth not initialized for logout.");
             }
           }
         });
-      }
     });
-
-    // Load devices on admin panel open (device tab)
-    const loadDeviceTab = document.querySelector('[data-tab="devices"]');
-    if (loadDeviceTab) {
-      loadDeviceTab.addEventListener("click", loadAllUserDevices);
-    }
   });
-
-  async function registerDevice(user) {
-    const detector = new DeviceDetector();
-    const parsed = detector.parse(navigator.userAgent);
-    const deviceInfo = {
-      email: user.email,
-      userAgent: navigator.userAgent,
-      device: parsed.device?.type || 'Unknown',
-      browser: parsed.client?.name || 'Unknown',
-      os: parsed.os?.name || 'Unknown',
-      date: Date.now()
-    };
-
-    const userRef = firebase.database().ref(`devices/${user.uid}`);
-    const snapshot = await userRef.once('value');
-    const existing = snapshot.val() || {};
-
-    const maxDevicesSnap = await firebase.database().ref("settings/deviceLimit").once("value");
-    const maxDevices = maxDevicesSnap.val() || 3;
-
-    if (Object.keys(existing).length >= maxDevices) {
-      alert("Device limit reached. Please remove an old device to continue.");
-      return;
-    }
-
-    await userRef.push(deviceInfo);
-  }
-
-  async function loadAllUserDevices() {
-    const container = document.getElementById("user-devices-list");
-    if (!container) return;
-    container.innerHTML = "";
-
-    const detector = new DeviceDetector();
-    const snapshot = await firebase.database().ref("devices").once("value");
-    const allDevices = snapshot.val() || {};
-
-    for (const userId in allDevices) {
-      const userDevices = allDevices[userId];
-      for (const key in userDevices) {
-        const data = userDevices[key];
-        const parsed = detector.parse(data.userAgent || "");
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.email}</td>
-          <td>${parsed.device?.type || "Unknown"}</td>
-          <td>${parsed.client?.name || "Unknown"}</td>
-          <td>${parsed.os?.name || "Unknown"}</td>
-          <td>${formatDateToDDMMYYYY(data.date)}</td>
-          <td><button class="btn btn-danger" onclick="removeDevice('${userId}', '${key}')">Remove</button></td>
-        `;
-        container.appendChild(row);
-      }
-    }
-  }
-
-  function removeDevice(userId, deviceKey) {
-    firebase.database().ref(`devices/${userId}/${deviceKey}`).remove().then(() => {
-      loadAllUserDevices();
-    });
-  }
 </script>
-
-
-
 </body>
 </html>
