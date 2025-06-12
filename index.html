@@ -54,20 +54,23 @@
             padding: 0 20px;
         }
 
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: var(--gradient-primary);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
-        }
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    /* Replace gradient with background image */
+    background: url('https://cdn.imgchest.com/files/4jdcv9j5xp4.jpg') no-repeat center center;
+    background-size: cover; /* Ensures image covers full screen */
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
 
         #splash-screen.fade-out {
             opacity: 0;
@@ -966,16 +969,62 @@
 .device-actions {
     margin-top: 5px;
 }
-/* Add this to your CSS */
-.btn-group.center-buttons {
-    justify-content: center;
+.site-subtext-wrapper {
+    overflow: hidden;
+    white-space: nowrap;
     width: 100%;
+    box-sizing: border-box;
+    padding: 5px 0;
+    margin-bottom: 20px;
 }
 
-.btn-group.center-buttons .btn {
-    margin: 0 5px;
+.site-subtext {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 15s linear infinite;
+    font-size: 0.85rem;
+    color: #6c757d;
 }
-    </style>
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+.whatsapp-all {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #25D366;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 50px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  z-index: 9999;
+  animation: float 2s ease-in-out infinite;
+}
+
+.whatsapp-all img {
+  width: 24px;
+  height: 24px;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+</style>
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/device-detector-js@2.2.10/dist/device-detector.min.js"></script>
@@ -1041,6 +1090,8 @@
                     </button>
                 </div>
             </header>
+            
+
 
             <div class="control-panel">
                 <div class="error-message" id="error-message"></div>
@@ -1070,6 +1121,9 @@
                     </button>
                 </div>
             </div>
+<div class="site-subtext-wrapper">
+    <div class="site-subtext">"Crafted with Love💕 by Karthik, Devanandan, Aromal, Sreehari MS & Abhinav P – Team AbsentEase"</div>
+</div>
 
             <div class="results-container">
                 <table>
@@ -1260,7 +1314,6 @@
                 <div class="tab" data-tab="attendance-mgmt"><i class="fas fa-calendar-check"></i> Attendance Management</div>
                 <div class="tab" data-tab="activity-logs"><i class="fas fa-history"></i> Activity Logs</div>
                 <div class="tab" data-tab="settings"><i class="fas fa-cogs"></i> System Settings</div>
-                <div class="tab" data-tab="devices"><i class="fas fa-mobile-alt"></i> Device Management</div>
             </div>
 
             <!-- User Management Tab -->
@@ -1315,31 +1368,6 @@
                 </div>
             </div>
             <div class="tab-content" id="devices-tab">
-    <div class="card">
-        <h2 class="card-title"><i class="fas fa-cog"></i> Device Settings</h2>
-        <div id="device-settings-error" class="error-message"></div>
-        <div id="device-settings-success" class="success-message"></div>
-        <div class="form-group">
-            <label for="max-devices"><i class="fas fa-laptop"></i> Max Devices Per User</label>
-            <input type="number" id="max-devices" min="1" max="10" value="3">
-        </div>
-        <div class="btn-group">
-            <button id="save-device-settings-btn" class="btn btn-primary">
-                <i class="fas fa-save"></i> Save Settings
-            </button>
-        </div>
-    </div>
-    
-    <div class="card">
-        <h2 class="card-title"><i class="fas fa-users"></i> User Devices</h2>
-        <div class="form-group">
-            <label for="device-user-filter"><i class="fas fa-filter"></i> Filter by User</label>
-            <input type="text" id="device-user-filter" placeholder="Search by email or name">
-        </div>
-        <div class="device-list" id="user-devices-list">
-            <!-- Devices will be loaded here -->
-        </div>
-    </div>
 </div>
 
 
@@ -1887,11 +1915,21 @@
             }
 
 
-            async function handleSplashScreen() {
-                await typeMessage(welcomeMessage, messageEl);
-                splashScreen.classList.add("fade-out");
-                setTimeout(() => { splashScreen.style.display = "none"; }, 500);
-            }
+async function handleSplashScreen() {
+    await typeMessage(welcomeMessage, messageEl);
+
+    // Fade out splash
+    const splashScreen = document.getElementById("splash-screen");
+    splashScreen.classList.add("fade-out");
+
+    // Wait for fade-out animation to finish
+    setTimeout(() => {
+        // ✅ Finally show WhatsApp button
+        const whatsappBtn = document.getElementById("whatsapp-button");
+        if (whatsappBtn) whatsappBtn.style.display = 'flex';
+    }, 600); // 500ms (fade duration) + 100ms buffer
+}
+
 
             function typeMessage(msg, element) {
                 return new Promise(resolve => {
@@ -2207,7 +2245,7 @@
                     await logActivity('share_attendance_success', { class: selectedClass, date: todayDB, count: absentees.length });
 
                     let shareText = `Today's Absentees (${todayFormatted}) - Class ${selectedClass}\n------------------------------------------\n`;
-                    absentees.forEach(item => { shareText += `${item.name} (Roll: ${item.roll})\n`; });
+                    absentees.forEach(item => { shareText += `${item.name}\n`; });
 
                     if (navigator.share) {
                         await navigator.share({ title: `Absentees - ${todayFormatted} - Class ${selectedClass}`, text: shareText });
@@ -2999,6 +3037,22 @@ function handleLogoutAction() {
   }
 </script>
 
+<script>
+  window.addEventListener('load', () => {
+    // Wait for splash screen duration
+    setTimeout(() => {
+      const whatsappBtn = document.querySelector('.whatsapp-all');
+      if (whatsappBtn) {
+        whatsappBtn.style.display = 'flex';
+      }
+    }, 6300); // ⏳ 2.5 seconds splash duration (change if needed)
+  });
+</script>
+<!-- WhatsApp Floating Button -->
+<a href= "https://chat.whatsapp.com/LXYe5XlUmzGG22di9Z74eS" class="whatsapp-all" id="whatsappBtn" style="display: none;" target="_blank">
+  <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" />
+  <span>Talk to Team</span>
+</a>
 
 
 </body>
