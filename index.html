@@ -1208,6 +1208,8 @@ textarea::placeholder {
             <div class="tabs">
                 <div class="tab active" data-tab="class">Class Attendance</div>
                 <div class="tab" data-tab="individual">Individual Attendance</div>
+                <div class="tab" data-tab="edit">Edit Attendance</div>
+
             </div>
 
             <div class="tab-content active" id="class-tab">
@@ -1318,6 +1320,46 @@ textarea::placeholder {
                     </table>
                 </div>
             </div>
+            <div class="tab-content" id="edit-tab">
+  <div class="control-panel">
+    <h3><i class="fas fa-edit"></i> Edit Attendance Record</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="edit-class-selector"><i class="fas fa-users"></i> Select Class</label>
+        <select id="edit-class-selector">
+          <!-- JS will populate -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="edit-date-selector"><i class="fas fa-calendar-alt"></i> Date</label>
+        <input type="date" id="edit-date-selector">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="edit-roll-selector"><i class="fas fa-id-card"></i> Roll Number</label>
+      <input type="text" id="edit-roll-selector" placeholder="e.g. 5">
+    </div>
+
+    <div class="form-group">
+      <label for="edit-status-selector"><i class="fas fa-check-circle"></i> Attendance Status</label>
+      <select id="edit-status-selector">
+        <option value="present">Present</option>
+        <option value="absent">Absent</option>
+      </select>
+    </div>
+
+    <div class="btn-group">
+      <button id="edit-attendance-submit-btn" class="btn btn-success">
+        <i class="fas fa-save"></i> Save Change
+      </button>
+    </div>
+
+    <div id="edit-attendance-message" class="success-message" style="display: none;"></div>
+  </div>
+</div>
+
         </div>
     </div>
 
@@ -1821,6 +1863,8 @@ async function logActivity(action, details = {}) {
             const shareBtn = document.getElementById("share-btn");
             const resultsTableBody = document.getElementById("results-table-body");
             const classSelectorMain = document.getElementById('class-selector');
+            const editClassSelector = document.getElementById("edit-class-selector"); // ✅ NEW LINE
+
 
             // Attendance screen elements
             const attendanceClassSelector = document.getElementById('attendance-class-selector');
@@ -1925,6 +1969,71 @@ async function logActivity(action, details = {}) {
                 loadAttendanceSettings(); // Load attendance settings on init
                 loadDeviceSettings();
             }
+document.getElementById("edit-attendance-submit-btn").addEventListener("click", async () => {
+                const cls = document.getElementById("edit-class-selector").value;
+                const date = document.getElementById("edit-date-selector").value;
+                const roll = document.getElementById("edit-roll-selector").value.trim();
+                const newStatus = document.getElementById("edit-status-selector").value;
+                const msgElId = "edit-attendance-message";
+
+                if (!cls || !date || !roll || !newStatus) {
+                    showMessage(msgElId, "Please fill all fields! ❌", false);
+                    return;
+                }
+                
+                // Validate that the roll number exists for the class
+                const studentName = allStudentNames?.[cls]?.[roll];
+                if (!studentName) {
+                    showMessage(msgElId, `Roll number ${roll} not found in class ${cls}. Please check the roll number.`, false);
+                    return;
+                }
+
+                showLoader();
+
+                try {
+                    const dayAttendanceRef = database.ref(`attendance/${date}/${cls}`);
+                    const snapshot = await dayAttendanceRef.once('value');
+                    let dayData = snapshot.val() || { date: date, class: cls, absentees: [] };
+                    
+                    // Ensure absentees array exists and is an array
+                    dayData.absentees = Array.isArray(dayData.absentees) ? dayData.absentees : [];
+
+                    const studentIndex = dayData.absentees.findIndex(s => s.roll.toString() === roll);
+                    const isCurrentlyAbsent = studentIndex !== -1;
+
+                    let updated = false;
+
+                    if (newStatus === 'absent' && !isCurrentlyAbsent) {
+                        // Add student to the absentees list
+                        dayData.absentees.push({ roll: roll, name: studentName });
+                        updated = true;
+                    } else if (newStatus === 'present' && isCurrentlyAbsent) {
+                        // Remove student from the absentees list
+                        dayData.absentees.splice(studentIndex, 1);
+                        updated = true;
+                    }
+
+                    if (updated) {
+                         // Add metadata for tracking edits
+                        dayData.lastEditedBy = currentUser.uid;
+                        dayData.lastEditedAt = firebase.database.ServerValue.TIMESTAMP;
+                        
+                        // Write the entire updated object back to Firebase
+                        await dayAttendanceRef.set(dayData);
+                        showMessage(msgElId, `✅ Attendance updated for Roll ${roll} to '${newStatus}'.`, true);
+                        logActivity("edit_attendance_manual", { class: cls, date, roll, newStatus: newStatus });
+                    } else {
+                        showMessage(msgElId, `ℹ️ No change needed. Student is already marked as '${newStatus}'.`, true);
+                    }
+
+                } catch (err) {
+                    showMessage(msgElId, `❌ Failed to update attendance: ${err.message}`, false);
+                    console.error("Error editing attendance:", err);
+                    logActivity("edit_attendance_manual_error", { class: cls, date, roll, error: err.message });
+                } finally {
+                    hideLoader();
+                }
+            });
 
             async function loadAllClassesData() {
                 try {
@@ -1947,42 +2056,37 @@ async function logActivity(action, details = {}) {
                 }
             }
             
-            function populateClassSelectors() {
-                const classNames = Object.keys(allClassesData);
-                const selectorsToPopulate = [
-                    classSelectorMain, attendanceClassSelector, studentClassSelectorIndividual,
-                    newUserClassSelect, editUserClassModalSelect, mgmtAttClassSelector
-                ];
+function populateClassSelectors() {
+  const classNames = Object.keys(allClassesData);
 
-                selectorsToPopulate.forEach(selector => {
-                    if (selector) {
-                        selector.innerHTML = ''; // Clear existing
-                        if (classNames.length === 0) {
-                            const defaultOption = document.createElement('option');
-                            defaultOption.textContent = "No classes available";
-                            defaultOption.disabled = true;
-                            selector.appendChild(defaultOption);
-                        } else {
-                             classNames.forEach(clsName => {
-                                const option = document.createElement('option');
-                                option.value = clsName;
-                                option.textContent = `Class ${clsName}`;
-                                selector.appendChild(option);
-                            });
-                        }
-                        // Trigger change for the main class selector to set initial studentsDataRef
-                        if (selector.id === 'class-selector' && classNames.length > 0) {
-                             selector.dispatchEvent(new Event('change'));
-                        }
-                    }
-                });
-            }
-            
-            function setTodaysDateForDateInputs() {
+  const selectorsToPopulate = [
+    classSelectorMain,
+    attendanceClassSelector,
+    studentClassSelectorIndividual,
+    newUserClassSelect,
+    editUserClassModalSelect,
+    mgmtAttClassSelector,
+    editClassSelector // ✅ this is the defined variable from DOMContentLoaded
+  ];
+
+  selectorsToPopulate.forEach(selector => {
+    if (!selector) return;
+    selector.innerHTML = ""; // Clear old options
+
+    classNames.forEach(cls => {
+      const option = document.createElement("option");
+      option.value = cls;
+      option.textContent = cls;
+      selector.appendChild(option);
+    });
+  });
+}
+       
+function setTodaysDateForDateInputs() {
                 const today = new Date().toISOString().split('T')[0];
                 const dateInputs = [
                     dateSelectorAttendance, mgmtAttStartDateInput, mgmtAttEndDateInput,
-                    logStartDateInput, logEndDateInput
+                    logStartDateInput, logEndDateInput, document.getElementById('edit-date-selector') // Added the edit tab's date input
                 ];
                 dateInputs.forEach(input => { if(input) input.value = today; });
             }
