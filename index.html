@@ -3481,32 +3481,34 @@
 
     </script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const shareBtn = document.getElementById("share-btn");
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareBtn = document.getElementById("share-btn");
 
-            if (shareBtn) {
-                // ✅ Make button visible
-                shareBtn.style.display = "inline-block";
+  if (shareBtn) {
+    shareBtn.style.display = "inline-block";
 
-                // ✅ Attach share event
-                shareBtn.addEventListener("click", () => {
-                    const textToShare = "📊 Attendance Report from AbsentEase";
+    shareBtn.addEventListener("click", () => {
+      const textToShare = "📊 Attendance Report from AbsentEase";
 
-                    if (window.AndroidShare && window.AndroidShare.shareText) {
-                        // Works inside your WebView app
-                        window.AndroidShare.shareText(textToShare);
-                    } else if (navigator.share) {
-                        // Works in Chrome/PWA
-                        navigator.share({ text: textToShare })
-                            .catch(err => console.log("Share cancelled:", err));
-                    } else {
-                        alert("Sharing not supported on this device.");
-                    }
-                });
-            }
-        });
-    </script>
+      if (window.AndroidShare && window.AndroidShare.shareText) {
+        // ✅ WebView Android native share
+        window.AndroidShare.shareText(textToShare);
+      } else if (navigator.share) {
+        // ✅ Must be called directly in click handler
+        navigator.share({
+          title: "AbsentEase",
+          text: textToShare,
+          url: window.location.href
+        }).catch(err => console.log("Share failed:", err));
+      } else {
+        alert("Sharing not supported on this device.");
+      }
+    });
+  }
+});
+</script>
+
 
     <!-- WhatsApp Floating Button -->
     <a href="https://chat.whatsapp.com/LXYe5XlUmzGG22di9Z74eS" class="whatsapp-all" id="whatsappBtn"
@@ -3519,3 +3521,4 @@
 </body>
 
 </html>
+
