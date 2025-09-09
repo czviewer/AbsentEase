@@ -3481,33 +3481,35 @@
 
     </script>
 
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
+ <script>
+document.addEventListener("DOMContentLoaded", function () {
   const shareBtn = document.getElementById("share-btn");
 
-  if (shareBtn) {
-    shareBtn.style.display = "inline-block";
+  if (!shareBtn) return;
 
-    shareBtn.addEventListener("click", () => {
-      const textToShare = "📊 Attendance Report from AbsentEase";
+  // Make button visible
+  shareBtn.style.display = "inline-block";
 
-      if (window.AndroidShare && window.AndroidShare.shareText) {
-        // ✅ WebView Android native share
-        window.AndroidShare.shareText(textToShare);
-      } else if (navigator.share) {
-        // ✅ Must be called directly in click handler
-        navigator.share({
-          title: "AbsentEase",
-          text: textToShare,
-          url: window.location.href
-        }).catch(err => console.log("Share failed:", err));
-      } else {
-        alert("Sharing not supported on this device.");
-      }
-    });
-  }
+  shareBtn.onclick = function () {
+    const textToShare = "📊 Attendance Report from AbsentEase";
+
+    if (window.AndroidShare && window.AndroidShare.shareText) {
+      // ✅ Android WebView native share
+      window.AndroidShare.shareText(textToShare);
+    } else if (navigator.share) {
+      // ✅ Must be directly in this onclick
+      navigator.share({
+        title: "AbsentEase",
+        text: textToShare,
+        url: window.location.href
+      }).catch(err => console.log("Share cancelled:", err));
+    } else {
+      alert("Sharing not supported on this device.");
+    }
+  };
 });
 </script>
+
 
 
     <!-- WhatsApp Floating Button -->
@@ -3521,4 +3523,5 @@ document.addEventListener("DOMContentLoaded", () => {
 </body>
 
 </html>
+
 
