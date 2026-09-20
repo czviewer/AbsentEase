@@ -1157,6 +1157,105 @@
                 transform: translateY(-5px);
             }
         }
+
+        /* --- PWA Auto-Install Banner Styles --- */
+        .pwa-install-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            width: 90%;
+            max-width: 440px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 10000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .pwa-install-banner.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .pwa-banner-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pwa-banner-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .pwa-banner-text h4 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .pwa-banner-text p {
+            font-size: 0.76rem;
+            margin: 2px 0 0 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pwa-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pwa-install-btn {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pwa-install-btn:hover {
+            transform: scale(1.04);
+        }
+
+        .pwa-close-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pwa-close-btn:hover {
+            color: #ffffff;
+        }
     </style>
 
 
@@ -3454,7 +3553,102 @@
         <span>Talk to Team</span>
     </a>
 
+    <!-- PWA Auto-Install Suggestion Banner -->
+    <div id="pwa-install-banner" class="pwa-install-banner">
+        <div class="pwa-banner-info">
+            <img src="./icon-192.png" alt="AbsentEase" class="pwa-banner-icon"
+                onerror="this.src='https://cdn.imgchest.com/files/yxkcza8jnz7.png'">
+            <div class="pwa-banner-text">
+                <h4 id="pwa-banner-title">Install AbsentEase App</h4>
+                <p id="pwa-banner-desc">Add to Home Screen for fast 1-tap access</p>
+            </div>
+        </div>
+        <div class="pwa-banner-actions">
+            <button id="pwa-install-btn" class="pwa-install-btn"><i class="fas fa-download"></i> Install</button>
+            <button id="pwa-close-btn" class="pwa-close-btn" aria-label="Close">&times;</button>
+        </div>
+    </div>
 
+    <!-- PWA Auto-Install Suggestion Logic for All Browsers -->
+    <script>
+        (function initPWAInstallPrompt() {
+            let deferredPrompt = null;
+            const banner = document.getElementById('pwa-install-banner');
+            const installBtn = document.getElementById('pwa-install-btn');
+            const closeBtn = document.getElementById('pwa-close-btn');
+            const titleEl = document.getElementById('pwa-banner-title');
+            const descEl = document.getElementById('pwa-banner-desc');
+
+            if (!banner || !installBtn || !closeBtn) return;
+
+            // Check if app is already running in PWA/shortcut mode
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true ||
+                document.referrer.includes('android-app://');
+
+            if (isStandalone) return;
+
+            // Check if user dismissed prompt recently (last 2 days)
+            const lastDismissed = localStorage.getItem('pwa_prompt_dismissed_time');
+            if (lastDismissed && Date.now() - parseInt(lastDismissed) < 2 * 24 * 60 * 60 * 1000) {
+                return;
+            }
+
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+
+            // Listen for native Chromium install prompt (Android Chrome, Edge, Samsung Internet)
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                showBanner();
+            });
+
+            // iOS Safari Guidance
+            if (isIOS) {
+                titleEl.textContent = 'Install AbsentEase App';
+                descEl.innerHTML = 'Tap <i class="fas fa-share-alt"></i> then <b>Add to Home Screen</b>';
+                installBtn.style.display = 'none';
+                showBanner();
+            }
+
+            // Universal fallback for Chrome/Firefox/Safari if beforeinstallprompt didn't trigger
+            setTimeout(() => {
+                if (!deferredPrompt && !isIOS && !isStandalone && !localStorage.getItem('pwa_prompt_dismissed_time')) {
+                    titleEl.textContent = 'Install AbsentEase App';
+                    descEl.textContent = 'Tap Install or Chrome menu ⋮ > Add to Home screen';
+                    showBanner();
+                }
+            }, 2500);
+
+            function showBanner() {
+                setTimeout(() => {
+                    banner.classList.add('show');
+                }, 1000);
+            }
+
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    banner.classList.remove('show');
+                } else {
+                    alert('To install AbsentEase:\n1. Tap your browser menu (⋮ or ⋯)\n2. Tap "Add to Home screen" or "Install App"');
+                    banner.classList.remove('show');
+                }
+            });
+
+            closeBtn.addEventListener('click', () => {
+                banner.classList.remove('show');
+                localStorage.setItem('pwa_prompt_dismissed_time', Date.now().toString());
+            });
+
+            window.addEventListener('appinstalled', () => {
+                banner.classList.remove('show');
+                deferredPrompt = null;
+            });
+        })();
+    </script>
 </body>
 
 </html>
