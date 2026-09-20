@@ -2392,18 +2392,17 @@ function checkCorrectionWindow() {
                 hideLoader();
             });
 
-            if(shareBtn) shareBtn.addEventListener('click', async () => {
-                showLoader();
+            if(shareBtn) shareBtn.addEventListener('click', () => {
                 const today = new Date();
                 const dd = String(today.getDate()).padStart(2, '0');
-                const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
                 const yyyy = today.getFullYear();
                 const todayFormatted = `${dd}-${mm}-${yyyy}`;
-                const todayDB = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD for DB
+                const todayDB = `${yyyy}-${mm}-${dd}`;
                 
                 const rows = resultsTableBody.querySelectorAll('tr');
                 if (rows.length === 0) {
-                    showMessage(mainErrorMessage.id, "No absentees to share.", false); hideLoader(); return;
+                    showMessage(mainErrorMessage.id, "No absentees to share.", false); return;
                 }
                 
                 const selectedClass = classSelectorMain.value;
@@ -2416,14 +2415,14 @@ function checkCorrectionWindow() {
                 });
                 
                 if (absentees.length === 0) {
-                    showMessage(mainErrorMessage.id, "No valid absentees to share.", false); hideLoader(); return;
+                    showMessage(mainErrorMessage.id, "No valid absentees to share.", false); return;
                 }
 
                 // 1. Prepare share text
                 let shareText = `Today's Absentees (${todayFormatted}) - Class ${selectedClass}\n------------------------------------------\n`;
                 absentees.forEach(item => { shareText += `${item.name}\n`; });
 
-                // 2. Always copy text to clipboard first as a reliable backup
+                // 2. Copy text to clipboard as a reliable backup
                 try {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(shareText);
@@ -2434,41 +2433,47 @@ function checkCorrectionWindow() {
                     console.warn("Clipboard copy warning:", clipErr);
                 }
 
-                // 3. Save to database safely
-                try {
-                    const userId = currentUser ? currentUser.uid : 'guest';
-                    const userEmail = currentUser ? currentUser.email : 'guest';
-                    const attendanceRef = database.ref(`attendance/${todayDB}/${selectedClass}`);
-                    await attendanceRef.set({ date: todayDB, class: selectedClass, absentees: absentees, recordedBy: userId, recordedAt: firebase.database.ServerValue.TIMESTAMP });
-                    
-                    const sharedAbsenteesRef = database.ref(`sharedAbsentees/${selectedClass}/${todayDB}`);
-                    await sharedAbsenteesRef.set({
-                        sharedBy: userEmail,
-                        timestamp: Date.now(),
-                        absentees: absentees.map(a => parseInt(a.roll))
-                    });
+                // 3. Save to Firebase in background (non-blocking so user gesture isn't lost!)
+                const userId = currentUser ? currentUser.uid : 'guest';
+                const userEmail = currentUser ? currentUser.email : 'guest';
+                
+                database.ref(`attendance/${todayDB}/${selectedClass}`).set({
+                    date: todayDB, class: selectedClass, absentees: absentees, recordedBy: userId, recordedAt: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    showMessage(mainSuccessMessage.id, "Attendance saved successfully!");
+                    logActivity('share_attendance_success', { class: selectedClass, date: todayDB, count: absentees.length });
+                }).catch(err => {
+                    console.error("Firebase save error:", err);
+                    showMessage(mainErrorMessage.id, `Attendance error: ${err.message}`, false);
+                });
+
+                database.ref(`sharedAbsentees/${selectedClass}/${todayDB}`).set({
+                    sharedBy: userEmail,
+                    timestamp: Date.now(),
+                    absentees: absentees.map(a => parseInt(a.roll))
+                }).then(() => {
                     if (typeof checkCorrectionWindow === 'function') {
                         checkCorrectionWindow();
                     }
+                }).catch(err => console.error(err));
 
-                    showMessage(mainSuccessMessage.id, "Attendance saved! Redirecting to WhatsApp...");
-                    await logActivity('share_attendance_success', { class: selectedClass, date: todayDB, count: absentees.length });
-                } catch (error) {
-                    console.error("Firebase save error:", error);
-                    showMessage(mainErrorMessage.id, `Attendance error: ${error.message}`, false);
-                }
-
-                // 4. Open WhatsApp share via dynamic anchor click (bypasses browser popup blocking)
+                // 4. Trigger Native Sharing (Android/iOS) or direct WhatsApp redirection (Desktop) synchronously
                 const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-                const shareLink = document.createElement('a');
-                shareLink.href = whatsappUrl;
-                shareLink.target = '_blank';
-                shareLink.rel = 'noopener noreferrer';
-                document.body.appendChild(shareLink);
-                shareLink.click();
-                document.body.removeChild(shareLink);
 
-                hideLoader();
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Today's Absentees - Class ${selectedClass}`,
+                        text: shareText
+                    }).catch(err => {
+                        console.log("Native share cancelled or unsupported, redirecting to WhatsApp:", err);
+                        window.location.href = whatsappUrl;
+                    });
+                } else {
+                    const win = window.open(whatsappUrl, '_blank');
+                    if (!win || win.closed || typeof win.closed === 'undefined') {
+                        window.location.href = whatsappUrl;
+                    }
+                }
             });
 
             function fallbackShareText(text, messageElementId, successText) {
