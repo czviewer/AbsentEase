@@ -1052,9 +1052,9 @@ textarea::placeholder {
 </style>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/device-detector-js@2.2.10/dist/device-detector.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/device-detector-js@2.2.10/dist/device-detector.min.js"></script>
 
 </head>
 <body>
@@ -2436,10 +2436,10 @@ checkCorrectionWindow();
                     let shareText = `Today's Absentees (${todayFormatted}) - Class ${selectedClass}\n------------------------------------------\n`;
                     absentees.forEach(item => { shareText += `${item.name}\n`; });
 
-                    if (navigator.share) {
-                        await navigator.share({ title: `Absentees - ${todayFormatted} - Class ${selectedClass}`, text: shareText });
-                    } else {
-                        fallbackShareText(shareText, mainSuccessMessage.id, "Absentees list copied to clipboard!");
+                    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                    const win = window.open(whatsappUrl, '_blank');
+                    if (!win || win.closed || typeof win.closed === 'undefined') {
+                        window.location.href = whatsappUrl;
                     }
                 } catch (error) {
                     showMessage(mainErrorMessage.id, `Error: ${error.message}`, false);
@@ -2450,11 +2450,6 @@ checkCorrectionWindow();
 
                 hideLoader();
             });
-            function showCorrectionPanel(absenteesList) {
-  document.getElementById("correction-ui").style.display = "block";
-  document.getElementById("add-rolls-btn").onclick = () => modifyRolls("add", absenteesList);
-  document.getElementById("remove-rolls-btn").onclick = () => modifyRolls("remove", absenteesList);
-}
 
             function fallbackShareText(text, messageElementId, successText) {
                 const textarea = document.createElement('textarea');
@@ -2537,7 +2532,7 @@ checkCorrectionWindow();
                     studentNameDisplayIndividual.textContent = `${studentName} (Roll: ${rollNumber})`;
                     
                     const attendanceRecordsRef = database.ref(`attendance`); 
-                    const snapshot = await attendanceRecordsRef.orderByKey().once('value'); // Order by date (key)
+                    const snapshot = await attendanceRecordsRef.orderByKey().limitToLast(90).once('value'); // Order by date (key), limit to 90 days
                     const allAttendanceData = snapshot.val();
                     
                     let tableHTML = '';
@@ -2887,16 +2882,14 @@ checkCorrectionWindow();
                     // We'll fetch by timestamp range and then filter other fields client-side.
                     // For production with many logs, consider Firestore or server-side processing/indexing.
                     const logsRef = database.ref('activityLogs');
-                    // Convert dates to timestamps for comparison if needed, or use string comparison if dates are YYYY-MM-DD
-                    // For server timestamps, we'd need to query by child 'timestamp'.
-                    // Here, we'll fetch all and filter. This is NOT scalable for many logs.
-                    const snapshot = await logsRef.orderByChild('timestamp').once('value'); // Fetch all, then filter
+                    const startTimestamp = new Date(startDate).getTime();
+                    const endTimestamp = new Date(endDate).setHours(23, 59, 59, 999); // End of day
+
+                    const snapshot = await logsRef.orderByChild('timestamp').startAt(startTimestamp).endAt(endTimestamp).limitToLast(200).once('value');
                     const allLogs = snapshot.val() || {};
                     
                     let tableHTML = "";
                     let logsFound = 0;
-                    const startTimestamp = new Date(startDate).getTime();
-                    const endTimestamp = new Date(endDate).setHours(23, 59, 59, 999); // End of day
 
                     Object.values(allLogs).filter(log => {
                         if (!log.timestamp || log.timestamp < startTimestamp || log.timestamp > endTimestamp) return false;
@@ -3045,31 +3038,6 @@ function getDeviceDetails() {
         time: new Date().toISOString()
     };
 }
-
-// Updated login handler
-loginBtn.addEventListener("click", () => {
-    const deviceDetails = getDeviceDetails();
-    // ... existing login code
-    then(async (userCredential) => { 
-        await logActivity('login_success', { 
-            email: email,
-            device: deviceDetails
-        });
-    })
-});
-
-// Updated logout handler
-function handleLogoutAction() {
-    const deviceDetails = getDeviceDetails();
-    // ... existing logout code
-    then(async () => {
-        await logActivity('logout', {
-            email: emailBeforeLogout,
-            device: deviceDetails
-        });
-    })
-}
-        
     </script>
     <!-- PDF export logic to be added at the bottom of your HTML, just before </body> -->
 <!-- PDF export logic to be added at the bottom of your HTML, just before </body> -->
@@ -3177,8 +3145,8 @@ function handleLogoutAction() {
   });
 
   async function registerDevice(user) {
-    const detector = new DeviceDetector();
-    const parsed = detector.parse(navigator.userAgent);
+    const detector = typeof DeviceDetector !== 'undefined' ? new DeviceDetector() : null;
+    const parsed = detector ? detector.parse(navigator.userAgent) : {};
     const deviceInfo = {
       email: user.email,
       userAgent: navigator.userAgent,
@@ -3208,15 +3176,16 @@ function handleLogoutAction() {
     if (!container) return;
     container.innerHTML = "";
 
-    const detector = new DeviceDetector();
+    const detector = typeof DeviceDetector !== 'undefined' ? new DeviceDetector() : null;
     const snapshot = await firebase.database().ref("devices").once("value");
     const allDevices = snapshot.val() || {};
 
+    const fragment = document.createDocumentFragment();
     for (const userId in allDevices) {
       const userDevices = allDevices[userId];
       for (const key in userDevices) {
         const data = userDevices[key];
-        const parsed = detector.parse(data.userAgent || "");
+        const parsed = detector ? detector.parse(data.userAgent || "") : {};
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -3227,9 +3196,10 @@ function handleLogoutAction() {
           <td>${formatDateToDDMMYYYY(data.date)}</td>
           <td><button class="btn btn-danger" onclick="removeDevice('${userId}', '${key}')">Remove</button></td>
         `;
-        container.appendChild(row);
+        fragment.appendChild(row);
       }
     }
+    container.appendChild(fragment);
   }
 
   function removeDevice(userId, deviceKey) {
@@ -3313,24 +3283,6 @@ document.getElementById("save-admin-log-setting").addEventListener("click", func
       alert("❌ Failed to save setting: " + err.message);
     });
 });
-function checkCorrectionWindow() {
-  const classId = classSelectorMain.value;
-  const date = new Date().toISOString().split('T')[0];
-  const cooldownMs = 5 * 60 * 60 * 1000;
-
-  firebase.database().ref(`sharedAbsentees/${classId}/${date}`).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (!data) return;
-    const submittedAt = data.timestamp || 0;
-    const now = Date.now();
-
-    if (now - submittedAt <= cooldownMs) {
-      showCorrectionPanel(data.absentees);
-    } else {
-      document.getElementById("correction-ui").style.display = "none";
-    }
-  });
-}
 
 
 </script>
